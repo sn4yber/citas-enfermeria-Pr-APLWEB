@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-import uuid
 
 
 class Especialidad(models.Model):
@@ -25,45 +24,11 @@ class Usuario(AbstractUser):
     rol = models.CharField(max_length=20, choices=Rol.choices, default=Rol.PACIENTE)
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(unique=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
-
-
-class Paciente(Usuario):
-    fecha_nacimiento = models.DateField(null=True, blank=True)
-
-    class Meta:
-        verbose_name = 'Paciente'
-        verbose_name_plural = 'Pacientes'
-
-    def save(self, *args, **kwargs):
-        if not self.rol:
-            self.rol = Usuario.Rol.PACIENTE
-        super().save(*args, **kwargs)
-
-
-class Medico(Usuario):
-    ESPECIALIDAD_CHOICES = [(e.nombre, e.nombre) for e in Especialidad.objects.all()]
-
-    especialidad = models.ForeignKey(
-        Especialidad,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='medicos'
-    )
-    disponible = models.BooleanField(default=True)
-
-    class Meta:
-        verbose_name = 'Médico'
-        verbose_name_plural = 'Médicos'
-
-    def save(self, *args, **kwargs):
-        if not self.rol:
-            self.rol = Usuario.Rol.MEDICO
-        super().save(*args, **kwargs)
 
 
 class Cita(models.Model):

@@ -1,0 +1,86 @@
+<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>
+
+<!-- Lifelines -->
+<mxCell id="10" value="Paciente" style="shape=umlLifeline;perimeter=mxPerimeterRectanglePerimeter;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="60" y="20" width="100" height="560" as="geometry"/>
+</mxCell>
+<mxCell id="11" value="Frontend&#xa;(Astro)" style="shape=umlLifeline;perimeter=mxPerimeterRectanglePerimeter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="220" y="20" width="100" height="560" as="geometry"/>
+</mxCell>
+<mxCell id="12" value="API REST&#xa;(DRF)" style="shape=umlLifeline;perimeter=mxPerimeterRectanglePerimeter;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="380" y="20" width="100" height="560" as="geometry"/>
+</mxCell>
+<mxCell id="13" value="Backend&#xa;(Django)" style="shape=umlLifeline;perimeter=mxPerimeterRectanglePerimeter;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="540" y="20" width="100" height="560" as="geometry"/>
+</mxCell>
+<mxCell id="14" value="Base de Datos&#xa;(PostgreSQL)" style="shape=umlLifeline;perimeter=mxPerimeterRectanglePerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+  <mxGeometry x="700" y="20" width="110" height="560" as="geometry"/>
+</mxCell>
+
+<!-- 1. Login -->
+<mxCell id="20" value="login(email, password)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="10" target="11" parent="1">
+  <mxGeometry x="0" y="100" relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="110"/><mxPoint x="220" y="110"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="21" value="POST /api/auth/login/" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="11" target="12" parent="1">
+  <mxGeometry x="0" y="130" relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="140"/><mxPoint x="380" y="140"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="22" value="verificarCredenciales()" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="12" target="13" parent="1">
+  <mxGeometry x="0" y="155" relative="1" as="geometry"><Array as="points"><mxPoint x="430" y="165"/><mxPoint x="540" y="165"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="23" value="SELECT usuario WHERE email=..." style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="13" target="14" parent="1">
+  <mxGeometry x="0" y="180" relative="1" as="geometry"><Array as="points"><mxPoint x="590" y="190"/><mxPoint x="700" y="190"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="24" value="usuario encontrado" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="14" target="13" parent="1">
+  <mxGeometry x="0" y="205" relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="215"/><mxPoint x="590" y="215"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="25" value="token JWT" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="12" target="11" parent="1">
+  <mxGeometry x="0" y="225" relative="1" as="geometry"><Array as="points"><mxPoint x="380" y="235"/><mxPoint x="270" y="235"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="26" value="sesión iniciada" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="11" target="10" parent="1">
+  <mxGeometry x="0" y="245" relative="1" as="geometry"><Array as="points"><mxPoint x="220" y="255"/><mxPoint x="110" y="255"/></Array></mxGeometry>
+</mxCell>
+
+<!-- 2. Consultar médicos -->
+<mxCell id="30" value="consultarMedicos(especialidad)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="10" target="11" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="285"/><mxPoint x="220" y="285"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="31" value="GET /api/medicos/?especialidad=X" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="11" target="12" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="305"/><mxPoint x="380" y="305"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="32" value="SELECT medicos disponibles" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="13" target="14" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="590" y="325"/><mxPoint x="700" y="325"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="33" value="lista médicos" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="14" target="13" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="345"/><mxPoint x="590" y="345"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="34" value="lista médicos" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="11" target="10" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="220" y="365"/><mxPoint x="110" y="365"/></Array></mxGeometry>
+</mxCell>
+
+<!-- 3. Agendar cita -->
+<mxCell id="40" value="agendarCita(medicoId, fecha, hora)" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="10" target="11" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="395"/><mxPoint x="220" y="395"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="41" value="POST /api/citas/" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="11" target="12" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="415"/><mxPoint x="380" y="415"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="42" value="validarDisponibilidad()" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="13" target="14" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="590" y="435"/><mxPoint x="700" y="435"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="43" value="horario libre" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="14" target="13" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="455"/><mxPoint x="590" y="455"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="44" value="INSERT cita" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;html=1;" edge="1" source="13" target="14" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="590" y="475"/><mxPoint x="700" y="475"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="45" value="cita confirmada" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="14" target="13" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="495"/><mxPoint x="590" y="495"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="46" value="201 Created" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="12" target="11" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="380" y="515"/><mxPoint x="270" y="515"/></Array></mxGeometry>
+</mxCell>
+<mxCell id="47" value="cita confirmada" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;html=1;" edge="1" source="11" target="10" parent="1">
+  <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="220" y="535"/><mxPoint x="110" y="535"/></Array></mxGeometry>
+</mxCell>
+
+</root></mxGraphModel>

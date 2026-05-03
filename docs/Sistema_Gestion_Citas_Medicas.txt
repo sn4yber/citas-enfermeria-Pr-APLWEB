@@ -1,0 +1,317 @@
+SISTEMA DE GESTIÓN
+DE CITAS MÉDICAS
+Documentación Técnica — Diagramas UML
+
+Integrantes del equipo
+Luis Eduardo Betancourt Pérez
+Jhon Fredis Medrano
+Snayber Madrid Ibarra
+Josué Valencia de Orta
+
+2025
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+1. Descripción General del Proyecto
+El proyecto consiste en el diseño e implementación de un sistema de gestión de citas médicas,
+cuyo propósito es facilitar la organización, reserva y administración de citas entre pacientes y
+profesionales de la salud dentro de una institución médica.
+
+En muchos centros médicos, el proceso de asignación de citas se realiza de manera manual o
+mediante herramientas poco integradas, lo que genera inconvenientes como conflictos de
+horarios, duplicación de citas, dificultades para modificar reservas y una gestión ineficiente de
+la agenda médica.
+
+Objetivo del sistema
+Optimizar la gestión de citas médicas mediante una plataforma digital que mejore la
+organización de la agenda médica, reduzca errores en la asignación de horarios y facilite la
+interacción entre pacientes, médicos y administradores.
+
+2. Actores del Sistema
+El sistema identifica tres actores principales que interactúan con la plataforma de manera
+diferenciada según sus permisos y responsabilidades:
+
+Actor
+
+Rol
+
+Permisos principales
+
+Paciente
+
+Usuario final del sistema
+
+Registrarse, agendar, cancelar
+y ver historial de citas
+
+Médico
+
+Profesional de la salud
+
+Ver agenda, consultar datos
+de pacientes, actualizar
+estado de citas
+
+Administrador
+
+Gestor del sistema
+
+Registrar médicos, gestionar
+especialidades, supervisar
+todo el sistema
+
+Cada actor accede al sistema mediante autenticación con credenciales propias. El rol asignado
+determina las funcionalidades disponibles y los datos a los que tiene acceso.
+
+Página 2 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+3. Requerimientos del Sistema
+
+3.1 Requerimientos Funcionales
+
+
+Permitir el registro e inicio de sesión de usuarios.
+
+
+
+
+
+
+Consultar la lista de médicos disponibles por especialidad.
+Agendar citas médicas según disponibilidad de horarios.
+Evitar que se registren citas duplicadas en el mismo horario.
+Permitir cancelar o modificar citas existentes.
+
+
+
+
+
+Permitir a los médicos consultar y gestionar su agenda diaria.
+Permitir a los administradores gestionar médicos y especialidades.
+Mantener un registro histórico de las citas realizadas.
+
+3.2 Requerimientos No Funcionales
+
+
+
+Mecanismos de autenticación seguros para proteger la información de los usuarios.
+Interfaz clara, intuitiva y accesible desde cualquier navegador web.
+
+
+
+
+
+Garantía de integridad de los datos registrados en el sistema.
+Manejo correcto de permisos de acceso según el rol del usuario.
+Arquitectura escalable que permita futuras integraciones tecnológicas.
+
+4. Arquitectura Técnica
+El sistema implementa una arquitectura web que separa frontend y backend, siguiendo el
+patrón de Arquitectura Hexagonal (puertos y adaptadores). Este enfoque permite que la lógica
+de negocio permanezca independiente de los componentes externos, facilitando el
+mantenimiento y las pruebas.
+
+Capa
+
+Tecnología
+
+Propósito
+
+Frontend
+
+Astro
+
+Interfaz web moderna y
+optimizada para usuarios
+
+Backend
+
+Django + Python
+
+Lógica del negocio y
+autenticación
+
+API
+
+Django REST Framework
+
+Exposición de servicios
+mediante API REST
+
+Página 3 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Base de datos
+
+PostgreSQL
+
+Almacenamiento de toda la
+información del sistema
+
+Control de versiones
+
+Git
+
+Gestión del código fuente y
+trazabilidad de cambios
+
+Página 4 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+5. Mockups UI/UX
+A continuación se presentan los diseños de interfaz de usuario para cada uno de los módulos
+principales del sistema. Los mockups representan la experiencia visual propuesta para los tres
+actores del sistema.
+
+5.1 Pantalla de Inicio de Sesión y registro
+Pantalla de acceso al sistema. Permite a todos los usuarios (paciente, médico y administrador)
+autenticarse mediante correo electrónico y contraseña. Incluye validación de campos y
+redirección automática según el rol del usuario autenticado.
+
+Figura: Login del sistema — Vista común para todos los roles
+
+5.2 Panel del Paciente
+Vista principal del paciente una vez autenticado. Muestra el resumen de sus citas próximas,
+acceso rápido para agendar una nueva cita y su historial de atenciones médicas.
+
+Página 5 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Figura: Dashboard del Paciente — Resumen de citas y acciones rápidas
+
+5.3 Agendar Cita
+Flujo de agendamiento de cita médica. El paciente selecciona la especialidad, elige un médico
+disponible, escoge la fecha y hora del horario disponible, y confirma la reserva. El sistema
+valida que no existan conflictos de horario antes de confirmar.
+
+Página 6 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Figura: Agendar Cita — Selección de especialidad, médico y horario
+
+5.4 Historial de Citas — Paciente
+Vista del historial completo de citas del paciente. Permite filtrar por fecha, estado (atendida,
+cancelada, pendiente) y especialidad. Desde esta pantalla también puede cancelar citas
+futuras.
+
+Página 7 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Figura: Historial de Citas — Listado con filtros y acciones
+
+Página 8 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+5.5 Panel del Médico — Agenda Diaria
+Vista principal del médico. Muestra la agenda del día con las citas programadas, nombre del
+paciente, hora y motivo de consulta. El médico puede marcar cada cita como atendida o
+registrar observaciones.
+
+Figura: Panel del Médico — Agenda diaria de citas programadas
+
+5.7 Panel del Administrador
+Panel de control del administrador. Desde aquí puede gestionar usuarios, registrar médicos,
+administrar especialidades y supervisar todas las citas del sistema mediante estadísticas y
+listados globales.
+
+Página 9 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Figura: Panel Administrador — Gestión global del sistema
+
+5.8 Gestión de Médicos — Administrador
+Módulo de administración de médicos. Permite registrar nuevos médicos, editar su información
+(especialidad, horario, datos de contacto) y desactivar cuentas cuando sea necesario.
+
+Página 10 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Figura: Gestión de Médicos — CRUD de profesionales de la salud
+
+Página 11 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+6. Diagramas UML
+Los siguientes diagramas representan la arquitectura conceptual y el comportamiento del
+sistema desde diferentes perspectivas de modelado UML, permitiendo comprender tanto la
+estructura estática como la dinámica del sistema.
+
+6.1 Diagrama de Componentes
+Representa la organización física del sistema y las dependencias entre sus componentes
+tecnológicos principales: el frontend en Astro, la API REST construida con Django REST
+Framework, los módulos del backend Django y la base de datos PostgreSQL.
+
+Figura: Diagrama de Componentes — Organización y dependencias tecnológicas
+
+Página 12 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+6.2 Diagrama de Clases y componentes
+
+Muestra la estructura estática del sistema a través de las clases principales, sus atributos,
+métodos y las relaciones entre ellas. La clase Usuario actúa como clase base para Paciente,
+Médico y Administrador mediante herencia. Las entidades Cita, Especialidad y Horario
+completan el modelo del dominio.
+
+Figura: Diagrama de Clases — Jerarquía, atributos, métodos y relaciones
+
+Página 13 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+6.3 Diagrama de Secuencias o casos de uso
+Describe la interacción cronológica entre los componentes del sistema durante el flujo de
+agendamiento de una cita médica. El diagrama modela los mensajes entre Paciente, Frontend
+(Astro), API REST, Backend (Django) y Base de Datos, incluyendo el proceso de autenticación,
+consulta de disponibilidad y confirmación de la cita.
+
+Figura: Diagrama de Secuencias — Interacción entre componentes para agendar una cita
+
+6.4 Diagrama de Actividades
+Representa el flujo completo de actividades del sistema desde que el usuario accede hasta que
+cierra sesión. Incluye la bifurcación por rol (Paciente, Médico, Administrador) con las
+actividades específicas de cada actor, los puntos de decisión (validación de credenciales,
+verificación de disponibilidad de horario) y los flujos alternativos correspondientes.
+
+Página 14 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+Figura: Diagrama de Actividades — Flujo de actividades por rol de usuario
+
+Página 15 de 16
+
+Sistema de Gestión de Citas Médicas — Documentación UML
+
+7. Conclusiones
+El diseño conceptual del Sistema de Gestión de Citas Médicas propone una solución integral
+que permite digitalizar y centralizar el proceso de agendamiento de citas en instituciones de
+salud. La arquitectura hexagonal elegida garantiza que la lógica de negocio permanezca
+desacoplada de los componentes externos, facilitando el mantenimiento y la evolución del
+sistema.
+
+El modelo de tres actores (Paciente, Médico y Administrador) con permisos diferenciados
+permite un control preciso sobre las operaciones del sistema. Los diagramas UML
+desarrollados proveen una base sólida para la implementación, cubriendo los aspectos
+estructurales (clases y componentes) y dinámicos (secuencias y actividades) del sistema.
+
+La combinación tecnológica propuesta — Astro en el frontend, Django con Django REST
+Framework en el backend, y PostgreSQL como motor de base de datos — representa una pila
+moderna, robusta y ampliamente adoptada en la industria, que garantiza la escalabilidad y
+mantenibilidad del sistema a largo plazo.
+
+Página 16 de 16
+
+
