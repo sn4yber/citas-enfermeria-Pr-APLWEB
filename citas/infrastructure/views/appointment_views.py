@@ -28,18 +28,30 @@ DURACION_CITA = timedelta(minutes=30)
 
 class AuthRegisterView(APIView):
     permission_classes = [AllowAny]
+    MAX_ADMINS = 5
 
     def post(self, request):
         serializer = UsuarioCreateSerializer(data=request.data)
         if serializer.is_valid():
+            rol = serializer.validated_data.get('rol', 'paciente')
+            
+            if rol == 'admin':
+                admin_count = Usuario.objects.filter(rol='admin').count()
+                if admin_count >= self.MAX_ADMINS:
+                    return Response(
+                        {'error': f'No se pueden crear más de {self.MAX_ADMINS} administradores. Contacte al soporte.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
             usuario_repo = UsuarioRepository()
             use_case = RegisterUserUseCase(usuario_repo)
             try:
                 usuario = use_case.execute(
                     first_name=serializer.validated_data['first_name'],
+                    last_name=serializer.validated_data.get('last_name', ''),
                     email=serializer.validated_data['email'],
                     password=serializer.validated_data['password'],
-                    rol=serializer.validated_data.get('rol', 'paciente'),
+                    rol=rol,
                     telefono=serializer.validated_data.get('telefono', '')
                 )
                 return Response(UsuarioSerializer(usuario).data, status=status.HTTP_201_CREATED)
@@ -52,30 +64,145 @@ class UsuarioView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Si es admin, devuelve todos los usuarios
+        if request.user.rol == 'admin':
+            usuarios = Usuario.objects.all()
+            return Response(UsuarioSerializer(usuarios, many=True).data)
+        
+        # Si no es admin, solo devuelve el usuario actual
+        return Response(UsuarioSerializer(request.user).data)
+
+    def put(self, request):
         if request.user.rol != 'admin':
             return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
-        usuarios = Usuario.objects.all()
-        return Response(UsuarioSerializer(usuarios, many=True).data)
+        
+        usuario_id = request.data.get('id')
+        try:
+            usuario = Usuario.objects.get(id=usuario_id)
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if 'first_name' in request.data:
+            usuario.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            usuario.last_name = request.data['last_name']
+        if 'email' in request.data:
+            usuario.email = request.data['email']
+        if 'telefono' in request.data:
+            usuario.telefono = request.data['telefono']
+        if 'is_active' in request.data:
+            usuario.is_active = request.data['is_active']
+        
+        usuario.save()
+        return Response(UsuarioSerializer(usuario).data)
+
+    def delete(self, request):
+        if request.user.rol != 'admin':
+            return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
+        
+        usuario_id = request.query_params.get('id')
+        try:
+            usuario = Usuario.objects.get(id=usuario_id, rol='paciente')
+            usuario.delete()
+            return Response({'message': 'Paciente eliminado'})
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Paciente no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class MedicoView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # GET público sin auth
 
     def get(self, request):
-        if not request.user.rol in ['paciente', 'admin']:
-            return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
+        if hasattr(request.user, 'rol') and request.user.rol == 'admin':
+            medicos = Usuario.objects.filter(rol='medico')
+        else:
+            medicos = Usuario.objects.filter(rol='medico', is_active=True)
         
         especialidad_id = request.query_params.get('especialidad')
-        
-        if request.user.rol == 'paciente':
-            medicos = Usuario.objects.filter(rol='medico', is_active=True)
-        else:
-            medicos = Usuario.objects.filter(rol='medico')
-            
         if especialidad_id:
             medicos = medicos.filter(especialidad_id=especialidad_id)
             
         return Response(UsuarioSerializer(medicos, many=True).data)
+
+    def post(self, request):
+        if request.user.rol != 'admin':
+            return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = UsuarioCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                esp_id_raw = request.data.get('especialidad_id')
+                esp_id = None
+                if esp_id_raw and esp_id_raw != '':
+                    try:
+                        esp_id = int(esp_id_raw)
+                    except:
+                        esp_id = None
+                
+                usuario = Usuario.objects.create_user(
+                    username=serializer.validated_data['email'],
+                    email=serializer.validated_data['email'],
+                    password=serializer.validated_data['password'],
+                    first_name=serializer.validated_data['first_name'],
+                    last_name=serializer.validated_data.get('last_name', ''),
+                    telefono=serializer.validated_data.get('telefono', ''),
+                    rol='medico',
+                    especialidad_id=esp_id
+                )
+                return Response(UsuarioSerializer(usuario).data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        if request.user.rol != 'admin':
+            return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
+        
+        medico_id = request.data.get('id')
+        try:
+            medico = Usuario.objects.get(id=medico_id, rol='medico')
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Médico no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if 'first_name' in request.data:
+            medico.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            medico.last_name = request.data['last_name']
+        if 'email' in request.data:
+            medico.email = request.data['email']
+        if 'telefono' in request.data:
+            medico.telefono = request.data['telefono']
+        if 'especialidad_id' in request.data:
+            esp_val = request.data['especialidad_id']
+            if esp_val and esp_val != '':
+                try:
+                    medico.especialidad_id = int(esp_val)
+                except:
+                    pass
+            else:
+                medico.especialidad_id = None
+        if 'is_active' in request.data:
+            val = request.data['is_active']
+            if isinstance(val, str):
+                val = val.lower() == 'true'
+            medico.is_active = bool(val)
+        if 'password' in request.data:
+            medico.set_password(request.data['password'])
+        
+        medico.save()
+        return Response(UsuarioSerializer(medico).data)
+
+    def delete(self, request):
+        if request.user.rol != 'admin':
+            return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
+        
+        medico_id = request.query_params.get('id')
+        try:
+            medico = Usuario.objects.get(id=medico_id, rol='medico')
+            medico.delete()
+            return Response({'message': 'Médico eliminado'})
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Médico no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class DisponibilidadView(APIView):
@@ -140,7 +267,11 @@ class CitaCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = CitaCreateSerializer(data=request.data)
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        if 'paciente_id' not in data and request.user.rol == 'paciente':
+            data['paciente_id'] = request.user.id
+            
+        serializer = CitaCreateSerializer(data=data)
         if serializer.is_valid():
             from datetime import datetime
             try:
@@ -198,11 +329,20 @@ class CitaDetailView(APIView):
         if serializer.is_valid():
             estado = serializer.validated_data.get('estado')
             observaciones = serializer.validated_data.get('observaciones', '')
+            nueva_fecha = serializer.validated_data.get('fecha')
+            nueva_hora = serializer.validated_data.get('hora')
             
             if estado:
                 cita.estado = estado
             if observaciones:
                 cita.observaciones = observaciones
+            
+            if nueva_fecha or nueva_hora:
+                if nueva_fecha:
+                    cita.fecha = nueva_fecha
+                if nueva_hora:
+                    cita.hora = nueva_hora
+            
             cita.save()
             return Response(CitaSerializer(cita).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -231,7 +371,7 @@ class CitaDetailView(APIView):
 
 
 class EspecialidadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # GET público para pacientes
 
     def get(self, request):
         especialidades = Especialidad.objects.all()

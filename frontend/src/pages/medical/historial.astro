@@ -1,0 +1,102 @@
+---
+import MedicalLayout from '../../layouts/MedicalLayout.astro';
+---
+
+<MedicalLayout title="Historial Clínico">
+  <div class="max-w-5xl mx-auto space-y-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight text-gray-900">Historial Clínico</h1>
+        <p class="text-gray-500 font-medium mt-1">Registro completo de todas las atenciones médicas realizadas</p>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div id="historialContainer" class="divide-y divide-gray-100">
+        <div class="p-16 text-center">
+          <svg class="animate-spin h-8 w-8 mx-auto text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</MedicalLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  const rol = localStorage.getItem('rol');
+  
+  if (!token || rol !== 'medico') {
+    window.location.replace('/medical/login');
+    throw new Error('No autorizado');
+  }
+
+  const API = 'http://localhost:8000/api';
+  const headers = { 'Authorization': `Bearer ${token}` };
+
+  async function loadHistorial() {
+    const res = await fetch(`${API}/citas/`, { headers });
+    const citas = await res.json();
+    
+    // Sort by date descending
+    citas.sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+    const container = document.getElementById('historialContainer');
+    if (citas.length === 0) {
+      container.innerHTML = `
+        <div class="p-16 text-center bg-gray-50/50">
+          <div class="w-16 h-16 bg-white border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          </div>
+          <p class="text-gray-500 font-medium">Su historial de atenciones está vacío.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const estadoColors = {
+      'programada': 'bg-blue-50 text-blue-700 border-blue-200',
+      'completada': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'cancelada': 'bg-red-50 text-red-700 border-red-200',
+      'no_asistio': 'bg-amber-50 text-amber-700 border-amber-200'
+    };
+
+    const formatFecha = (fechaStr) => {
+      const d = new Date(fechaStr + 'T00:00:00');
+      return d.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    container.innerHTML = citas.map(c => `
+      <div class="p-6 sm:p-8 hover:bg-slate-50 transition-colors">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+          <div class="flex items-start gap-5">
+            <div class="w-12 h-12 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-700 font-bold shrink-0">
+              ${c.paciente?.first_name?.[0] || 'P'}
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 text-lg mb-1">${c.paciente?.first_name || ''} ${c.paciente?.last_name || 'Paciente Registrado'}</h3>
+              <div class="flex items-center gap-3 text-sm font-medium text-gray-500 mb-3">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  ${formatFecha(c.fecha)}
+                </span>
+                <span class="text-gray-300">•</span>
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  ${c.hora.substring(0,5)}
+                </span>
+              </div>
+              ${c.motivo ? `<div class="mt-2 bg-white p-3 rounded-lg border border-gray-100 text-sm text-gray-700"><span class="font-semibold text-gray-900">Motivo de consulta:</span> ${c.motivo}</div>` : ''}
+              ${c.observaciones ? `<div class="mt-2 bg-amber-50 p-3 rounded-lg border border-amber-100 text-sm text-amber-800"><span class="font-semibold">Observación Clínica:</span> ${c.observaciones}</div>` : ''}
+            </div>
+          </div>
+          <div class="shrink-0 pt-2 sm:pt-0">
+            <span class="px-3 py-1.5 border ${estadoColors[c.estado] || 'bg-gray-50 border-gray-200 text-gray-700'} rounded-lg text-xs font-bold uppercase tracking-wider">${c.estado.replace('_', ' ')}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  loadHistorial();
+</script>

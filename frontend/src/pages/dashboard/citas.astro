@@ -1,0 +1,162 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Historial Médico">
+  <div class="max-w-4xl mx-auto space-y-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight text-gray-900">Historial de Citas</h1>
+        <p class="text-gray-500 font-medium mt-1">Revise todas sus atenciones y consultas médicas</p>
+      </div>
+      <a href="/dashboard/agendar" class="px-5 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Nueva Consulta
+      </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <button onclick="filterCitas('todas')" id="filterTodas" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold whitespace-nowrap transition-colors shadow-sm">Todas</button>
+      <button onclick="filterCitas('programada')" id="filterProgramada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Próximas</button>
+      <button onclick="filterCitas('completada')" id="filterCompletada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Completadas</button>
+      <button onclick="filterCitas('cancelada')" id="filterCancelada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Canceladas</button>
+    </div>
+
+    <div id="citasContainer" class="space-y-4">
+      <div class="text-center py-16 bg-white border border-gray-100 rounded-3xl">
+        <svg class="animate-spin h-8 w-8 mx-auto text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  const rol = localStorage.getItem('rol');
+  
+  if (!token || rol !== 'paciente') {
+    window.location.replace('/auth/login');
+    throw new Error('No autorizado');
+  }
+
+  let todasCitas = [];
+
+  async function loadCitas() {
+    const res = await fetch('http://localhost:8000/api/citas/', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    todasCitas = await res.json();
+    // Ordenar de más reciente a más antigua
+    todasCitas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+    filterCitas('todas');
+  }
+
+  function filterCitas(estado) {
+    const states = ['Todas', 'Programada', 'Completada', 'Cancelada'];
+    states.forEach(e => {
+      const btn = document.getElementById('filter' + e);
+      if(!btn) return;
+      if (e.toLowerCase() === estado) {
+        btn.className = 'px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold whitespace-nowrap transition-colors shadow-sm';
+      } else {
+        btn.className = 'px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm';
+      }
+    });
+
+    const filtered = estado === 'todas' ? todasCitas : todasCitas.filter(c => c.estado === estado);
+    const container = document.getElementById('citasContainer');
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-16 bg-white rounded-3xl border border-gray-100">
+          <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <p class="text-gray-500 font-medium mb-4">No tiene citas ${estado === 'todas' ? 'registradas en su historial' : 'en este estado'}.</p>
+          <a href="/dashboard/agendar" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-slate-800 font-semibold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+            Agendar Consulta
+          </a>
+        </div>
+      `;
+      return;
+    }
+
+    const estadoColors = {
+      'programada': { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'PRÓXIMA' },
+      'completada': { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'COMPLETADA' },
+      'cancelada': { bg: 'bg-red-50 border-red-200', text: 'text-red-700', label: 'CANCELADA' },
+      'no_asistio': { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'NO ASISTIÓ' }
+    };
+
+    const formatFecha = (fechaStr) => {
+      const d = new Date(fechaStr + 'T00:00:00');
+      const dia = d.getDate();
+      const mes = d.toLocaleDateString('es-ES', { month: 'short' });
+      const año = d.getFullYear();
+      return { dia, mes, año };
+    };
+
+    container.innerHTML = filtered.map(c => {
+      const color = estadoColors[c.estado] || estadoColors.programada;
+      const { dia, mes, año } = formatFecha(c.fecha);
+      
+      return `
+        <div class="bg-white rounded-3xl border border-gray-100 hover:border-gray-200 shadow-sm transition-colors p-6 sm:p-8">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-6">
+            <div class="flex items-start gap-6">
+              <div class="w-16 h-16 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col items-center justify-center shrink-0">
+                <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">${mes}</span>
+                <span class="text-xl font-bold text-slate-800 leading-none mt-1">${dia}</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 text-xl mb-1">Dr. ${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</h3>
+                <div class="flex flex-wrap items-center gap-3 text-sm font-medium text-gray-500">
+                  <span class="flex items-center gap-1.5 text-slate-600">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    ${c.hora.substring(0,5)}
+                  </span>
+                  <span class="text-gray-300">•</span>
+                  <span>${c.medico?.especialidad?.nombre || 'Consulta General'}</span>
+                  <span class="text-gray-300">•</span>
+                  <span>${año}</span>
+                </div>
+                ${c.motivo ? `<div class="mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100 text-gray-700 text-sm leading-relaxed"><span class="font-semibold text-gray-900">Motivo:</span> ${c.motivo}</div>` : ''}
+              </div>
+            </div>
+            
+            <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-4 border-t border-gray-100 sm:border-0 pt-4 sm:pt-0 shrink-0">
+              <span class="px-3 py-1.5 ${color.bg} ${color.text} border rounded-lg text-xs font-bold tracking-wider">${color.label}</span>
+              ${c.estado === 'programada' ? `
+                <button onclick="cancelarCita(${c.id})" class="text-red-500 hover:text-red-700 text-sm font-semibold transition-colors mt-1">Cancelar Cita</button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.cancelarCita = async (id) => {
+    if (!confirm('¿Está seguro de que desea cancelar esta cita? Esta acción no se puede deshacer.')) return;
+    
+    const res = await fetch(`http://localhost:8000/api/citas/${id}/`, {
+      method: 'PUT',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ estado: 'cancelada' })
+    });
+
+    if (res.ok) {
+      loadCitas();
+    } else {
+      alert('Hubo un error al cancelar la cita.');
+    }
+  };
+
+  loadCitas();
+</script>

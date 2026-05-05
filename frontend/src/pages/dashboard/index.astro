@@ -1,0 +1,127 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Mi Dashboard">
+  <div class="max-w-4xl mx-auto space-y-8">
+    <!-- Bienvenida -->
+    <div class="bg-teal-700 rounded-3xl p-8 sm:p-10 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+      <div>
+        <h1 class="text-3xl font-semibold tracking-tight mb-2">Bienvenido a su portal</h1>
+        <p class="text-teal-100 text-lg font-medium">Gestione sus consultas médicas de forma rápida y segura.</p>
+      </div>
+      <div class="hidden sm:block">
+        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Acción principal -->
+      <div class="md:col-span-1">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-full flex flex-col justify-center">
+          <div class="w-12 h-12 bg-slate-50 text-slate-800 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">Atención Médica</h2>
+          <p class="text-gray-500 text-sm mb-6">Programe una nueva cita con nuestros especialistas.</p>
+          <a href="/dashboard/agendar" class="mt-auto block text-center px-6 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-colors shadow-sm">
+            Agendar Consulta
+          </a>
+        </div>
+      </div>
+
+      <!-- Próximas citas -->
+      <div class="md:col-span-2">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 h-full">
+          <div class="flex justify-between items-end mb-6 border-b border-gray-100 pb-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900 tracking-tight">Próximas Citas</h2>
+              <p class="text-sm text-gray-500 mt-1">Atenciones programadas recientemente</p>
+            </div>
+            <a href="/dashboard/citas" class="text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">Ver historial →</a>
+          </div>
+          <div id="citasProximas" class="space-y-4">
+            <div class="text-center py-12 text-gray-400">
+              <svg class="animate-spin h-8 w-8 mx-auto text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  const rol = localStorage.getItem('rol');
+  
+  if (!token || rol !== 'paciente') {
+    window.location.replace('/auth/login');
+    throw new Error('No autorizado');
+  }
+
+  async function loadCitas() {
+    try {
+      const res = await fetch('http://localhost:8000/api/citas/', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        window.location.replace('/auth/login');
+        return;
+      }
+
+      const citas = await res.json();
+      const programadas = citas.filter(c => c.estado === 'programada').slice(0, 3);
+      const container = document.getElementById('citasProximas');
+
+      if (programadas.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <p class="text-gray-500 font-medium mb-3">No tiene consultas programadas</p>
+            <a href="/dashboard/agendar" class="text-teal-600 font-semibold hover:text-teal-700 hover:underline transition-colors">Agendar una ahora</a>
+          </div>
+        `;
+        return;
+      }
+
+      const formatFecha = (fechaStr) => {
+        const d = new Date(fechaStr + 'T00:00:00');
+        const dia = d.getDate();
+        const mes = d.toLocaleDateString('es-ES', { month: 'short' });
+        return { dia, mes };
+      };
+
+      container.innerHTML = programadas.map(c => {
+        const { dia, mes } = formatFecha(c.fecha);
+        return `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-100 rounded-xl hover:border-gray-200 hover:shadow-sm transition-all gap-4">
+          <div class="flex items-center gap-5">
+            <div class="w-14 h-14 bg-slate-50 border border-slate-100 rounded-xl flex flex-col items-center justify-center">
+              <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">${mes}</span>
+              <span class="text-lg font-bold text-slate-800 leading-none mt-0.5">${dia}</span>
+            </div>
+            <div>
+              <p class="font-bold text-gray-900 text-lg">Dr. ${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</p>
+              <div class="flex items-center gap-2 text-sm font-medium text-gray-500 mt-0.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ${c.hora.substring(0,5)}
+                <span class="text-gray-300">•</span>
+                <span>${c.medico?.especialidad?.nombre || 'Consulta'}</span>
+              </div>
+            </div>
+          </div>
+          <span class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs rounded-lg font-bold uppercase tracking-wider text-center">Confirmada</span>
+        </div>
+      `}).join('');
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  loadCitas();
+</script>

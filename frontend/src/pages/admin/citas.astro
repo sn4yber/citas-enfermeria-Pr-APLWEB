@@ -1,0 +1,225 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Gestión de Citas">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Todas las Citas</h1>
+    <p class="text-gray-500">Gestiona, reprograma y cancela citas</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <p class="text-sm text-gray-500">Total Citas</p>
+      <p class="text-2xl font-bold text-gray-900" id="totalCitas">-</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <p class="text-sm text-gray-500">Programadas</p>
+      <p class="text-2xl font-bold text-slate-900" id="programadasCount">-</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <p class="text-sm text-gray-500">Completadas</p>
+      <p class="text-2xl font-bold text-green-600" id="completadasCount">-</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <p class="text-sm text-gray-500">Canceladas</p>
+      <p class="text-2xl font-bold text-red-600" id="canceladasCount">-</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100 flex gap-4 flex-wrap">
+      <input type="text" id="searchInput" placeholder="Buscar por paciente o médico..." class="flex-1 min-w-48 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+      <select id="filterEstado" class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
+        <option value="">Todos los estados</option>
+        <option value="programada">Programada</option>
+        <option value="completada">Completada</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="no_asistio">No Asistió</option>
+      </select>
+    </div>
+    <div id="loading" class="text-center py-8 text-gray-500">Cargando...</div>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100 bg-gray-50">
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Paciente</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Médico</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Fecha</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Hora</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Motivo</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Estado</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="citasBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="modalReprogramar" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Reprogramar Cita</h2>
+      <form id="reprogramarForm" class="space-y-4">
+        <input type="hidden" id="citaId" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Fecha</label>
+          <input type="date" id="nuevaFecha" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Hora</label>
+          <input type="time" id="nuevaHora" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nuevo Estado</label>
+          <select id="nuevoEstado" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500">
+            <option value="programada">Programada</option>
+            <option value="completada">Completada</option>
+            <option value="cancelada">Cancelada</option>
+            <option value="no_asistio">No Asistió</option>
+          </select>
+        </div>
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="flex-1 bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800">Guardar</button>
+          <button type="button" onclick="closeReprogramar()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modalDetalle" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Detalle de Cita</h2>
+      <div id="citaDetalle" class="space-y-4"></div>
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="closeDetalle()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  if (!token || localStorage.getItem('rol') !== 'admin') {
+    window.location.href = '/admin/login';
+  }
+
+  const API = 'http://localhost:8000/api';
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+  let todasCitas = [];
+
+  function getEstadoClass(estado) {
+    const classes = { 'programada': 'bg-teal-100 text-teal-700', 'completada': 'bg-green-100 text-green-700', 'cancelada': 'bg-red-100 text-red-700', 'no_asistio': 'bg-orange-100 text-orange-700' };
+    return classes[estado] || 'bg-gray-100 text-gray-700';
+  }
+
+  function updateStats() {
+    document.getElementById('totalCitas').textContent = todasCitas.length;
+    document.getElementById('programadasCount').textContent = todasCitas.filter(c => c.estado === 'programada').length;
+    document.getElementById('completadasCount').textContent = todasCitas.filter(c => c.estado === 'completada').length;
+    document.getElementById('canceladasCount').textContent = todasCitas.filter(c => c.estado === 'cancelada').length;
+  }
+
+  function renderCitas(citas) {
+    const tbody = document.getElementById('citasBody');
+    if (citas.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No hay citas</td></tr>';
+      return;
+    }
+    tbody.innerHTML = citas.map(c => `
+      <tr class="border-b border-gray-50 hover:bg-gray-50">
+        <td class="py-3 px-4 text-sm text-gray-900">${c.paciente?.first_name || ''} ${c.paciente?.last_name || ''}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${c.fecha}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${c.hora}</td>
+        <td class="py-3 px-4 text-sm text-gray-600 max-w-xs truncate">${c.motivo || '-'}</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${getEstadoClass(c.estado)}">${c.estado}</span></td>
+        <td class="py-3 px-4">
+          <button onclick="verDetalle(${c.id})" class="text-slate-900 hover:text-slate-800 text-sm mr-2">Ver</button>
+          <button onclick="openReprogramar(${c.id}, '${c.fecha}', '${c.hora}', '${c.estado}')" class="text-slate-900 hover:text-teal-700 text-sm mr-2">Editar</button>
+          ${c.estado !== 'cancelada' ? `<button onclick="cancelarCita(${c.id})" class="text-red-600 hover:text-red-700 text-sm">Cancelar</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadCitas() {
+    document.getElementById('loading').classList.remove('hidden');
+    const res = await fetch(`${API}/citas/`, { headers });
+    document.getElementById('loading').classList.add('hidden');
+    if (res.ok) {
+      todasCitas = await res.json();
+      updateStats();
+      renderCitas(todasCitas);
+    }
+  }
+
+  window.verDetalle = (id) => {
+    const c = todasCitas.find(c => c.id === id);
+    const div = document.getElementById('citaDetalle');
+    div.innerHTML = `
+      <div class="grid grid-cols-2 gap-4">
+        <div><p class="text-sm text-gray-500">Paciente</p><p class="font-medium">${c.paciente?.first_name || ''} ${c.paciente?.last_name || ''}</p></div>
+        <div><p class="text-sm text-gray-500">Médico</p><p class="font-medium">${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</p></div>
+        <div><p class="text-sm text-gray-500">Fecha</p><p class="font-medium">${c.fecha}</p></div>
+        <div><p class="text-sm text-gray-500">Hora</p><p class="font-medium">${c.hora}</p></div>
+        <div><p class="text-sm text-gray-500">Estado</p><span class="px-2 py-1 text-xs font-medium rounded-full ${getEstadoClass(c.estado)}">${c.estado}</span></div>
+        <div><p class="text-sm text-gray-500">Creado</p><p class="font-medium">${c.creado_en ? new Date(c.creado_en).toLocaleString() : '-'}</p></div>
+      </div>
+      <div><p class="text-sm text-gray-500">Motivo</p><p class="font-medium">${c.motivo || 'Sin motivo'}</p></div>
+      <div><p class="text-sm text-gray-500">Observaciones</p><p class="font-medium">${c.observaciones || 'Sin observaciones'}</p></div>
+    `;
+    document.getElementById('modalDetalle').classList.remove('hidden');
+    document.getElementById('modalDetalle').classList.add('flex');
+  };
+
+  window.closeDetalle = () => {
+    document.getElementById('modalDetalle').classList.add('hidden');
+    document.getElementById('modalDetalle').classList.remove('flex');
+  };
+
+  window.openReprogramar = (id, fecha, hora, estado) => {
+    document.getElementById('citaId').value = id;
+    document.getElementById('nuevaFecha').value = fecha;
+    document.getElementById('nuevaHora').value = hora;
+    document.getElementById('nuevoEstado').value = estado;
+    document.getElementById('modalReprogramar').classList.remove('hidden');
+    document.getElementById('modalReprogramar').classList.add('flex');
+  };
+
+  window.closeReprogramar = () => {
+    document.getElementById('modalReprogramar').classList.add('hidden');
+    document.getElementById('modalReprogramar').classList.remove('flex');
+  };
+
+  window.cancelarCita = async (id) => {
+    if (!confirm('¿Cancelar esta cita?')) return;
+    const res = await fetch(`${API}/citas/${id}/`, { method: 'PUT', headers, body: JSON.stringify({ estado: 'cancelada' }) });
+    if (res.ok) loadCitas();
+  };
+
+  document.getElementById('reprogramarForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('citaId').value;
+    const data = { fecha: document.getElementById('nuevaFecha').value, hora: document.getElementById('nuevaHora').value, estado: document.getElementById('nuevoEstado').value };
+    const res = await fetch(`${API}/citas/${id}/`, { method: 'PUT', headers, body: JSON.stringify(data) });
+    if (res.ok) { closeReprogramar(); loadCitas(); } else alert('Error al reprogramar');
+  };
+
+  document.getElementById('searchInput').oninput = filterCitas;
+  document.getElementById('filterEstado').onchange = filterCitas;
+
+  function filterCitas() {
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    const estado = document.getElementById('filterEstado').value;
+    const filtered = todasCitas.filter(c => {
+      const matchTerm = (c.paciente?.first_name + ' ' + c.paciente?.last_name).toLowerCase().includes(term) || (c.medico?.first_name + ' ' + c.medico?.last_name).toLowerCase().includes(term);
+      const matchEstado = !estado || c.estado === estado;
+      return matchTerm && matchEstado;
+    });
+    renderCitas(filtered);
+  }
+
+  loadCitas();
+</script>

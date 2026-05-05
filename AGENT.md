@@ -45,13 +45,9 @@ Sistema web para gestionar citas médicas en una institución de salud.
 - `Cita` + paciente_id, medico_id, fecha, hora, estado, motivo
 
 ## Pendiente
-1. [x] Modelos Django
-2. [x] CRUD API + JWT
-3. [x] Permisos por rol
-4. [x] Disponibilidad/horarios
-5. [x] Swagger/OpenAPI
-6. [x] Rate limiting
-7. [x] CORS
-8. [x] Manejo errores + formato estándar
-9. [x] Tests
-10. [ ] Frontend Astro
+1. [x] Backend Django completo
+2. [x] Frontend Astro (Auth + Dashboard paciente)
+3. [x] Rutas /admin/* y /medical/*
+4. [ ] Dashboard admin/medico
+5. [ ] Agendar citas (frontend)
+6. [ ] Conexión con backend

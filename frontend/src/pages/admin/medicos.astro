@@ -1,0 +1,292 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Gestión Médicos">
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Gestión de Médicos</h1>
+      <p class="text-gray-500">Administra los médicos del sistema</p>
+    </div>
+    <button id="openModalBtn" class="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+      Nuevo Médico
+    </button>
+  </div>
+
+  <div id="loading" class="text-center py-8 text-gray-500">Cargando...</div>
+  
+  <div id="error" class="hidden p-4 mb-4 bg-red-50 text-red-600 rounded-lg"></div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full" id="medicosTable">
+      <thead>
+        <tr class="border-b border-gray-100 bg-gray-50">
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Nombre</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Teléfono</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Especialidad</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Estado</th>
+          <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="medicosBody"></tbody>
+    </table>
+  </div>
+
+  <div id="modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+      <h2 class="text-xl font-bold text-gray-900 mb-4" id="modalTitle">Nuevo Médico</h2>
+      <form id="medicoForm" class="space-y-4">
+        <input type="hidden" id="medicoId" />
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" id="first_name" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+            <input type="text" id="last_name" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+        </div>
+        <div id="passwordContainer">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+          <input type="password" id="password" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+          <p class="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input type="text" id="telefono" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+          <select id="especialidad_id" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="flex-1 bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800">Guardar</button>
+          <button type="button" id="closeModalBtn" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="passwordModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Cambiar Contraseña</h2>
+      <form id="passwordForm" class="space-y-4">
+        <input type="hidden" id="passwordMedicoId" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Médico</label>
+          <p id="passwordMedicoEmail" class="text-gray-900 font-medium"></p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
+          <input type="password" id="newPassword" required minlength="6" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+          <p class="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
+        </div>
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="flex-1 bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800">Cambiar</button>
+          <button type="button" onclick="closePasswordModal()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  if (!token || localStorage.getItem('rol') !== 'admin') {
+    window.location.href = '/admin/login';
+  }
+
+  const API = 'http://localhost:8000/api';
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  let especialidades = [];
+
+  async function loadEspecialidades() {
+    const res = await fetch(`${API}/especialidades/`, { headers });
+    if (res.ok) {
+      especialidades = await res.json();
+      const select = document.getElementById('especialidad_id');
+      select.innerHTML = '<option value="">Seleccionar...</option>';
+      especialidades.forEach(e => {
+        select.innerHTML += `<option value="${e.id}">${e.nombre}</option>`;
+      });
+    }
+  }
+
+  async function loadMedicos() {
+    document.getElementById('loading').classList.remove('hidden');
+    const res = await fetch(`${API}/medicos/`, { headers });
+    document.getElementById('loading').classList.add('hidden');
+    
+    if (!res.ok) {
+      document.getElementById('error').textContent = 'Error al cargar médicos';
+      document.getElementById('error').classList.remove('hidden');
+      return;
+    }
+    
+    const medicos = await res.json();
+    const tbody = document.getElementById('medicosBody');
+    tbody.innerHTML = medicos.map(m => `
+      <tr class="border-b border-gray-50 hover:bg-gray-50">
+        <td class="py-3 px-4 text-sm text-gray-900">${m.first_name} ${m.last_name}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${m.email}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${m.telefono || '-'}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${m.especialidad?.nombre || 'Sin especialidad'}</td>
+        <td class="py-3 px-4">
+          <span class="px-2 py-1 text-xs font-medium rounded-full ${m.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+            ${m.is_active ? 'Activo' : 'Inactivo'}
+          </span>
+        </td>
+        <td class="py-3 px-4">
+          <button onclick="editMedico(${m.id}, '${m.first_name}', '${m.last_name}', '${m.email}', '${m.telefono || ''}', ${m.especialidad?.id || 'null'})" class="text-slate-900 hover:text-slate-800 mr-2">Editar</button>
+          <button onclick="changePassword(${m.id}, '${m.email}')" class="text-slate-900 hover:text-teal-700 mr-2">Password</button>
+          <button onclick="toggleMedico(${m.id}, ${!m.is_active})" class="${m.is_active ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'} mr-2">
+            ${m.is_active ? 'Desact' : 'Activar'}
+          </button>
+          <button onclick="deleteMedico(${m.id})" class="text-red-600 hover:text-red-700">Eliminar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  window.editMedico = (id, first_name, last_name, email, telefono, especialidadId) => {
+    document.getElementById('medicoId').value = id;
+    document.getElementById('first_name').value = first_name;
+    document.getElementById('last_name').value = last_name;
+    document.getElementById('email').value = email;
+    document.getElementById('telefono').value = telefono;
+    document.getElementById('especialidad_id').value = especialidadId || '';
+    document.getElementById('passwordContainer').classList.add('hidden');
+    document.getElementById('modalTitle').textContent = 'Editar Médico';
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('modal').classList.add('flex');
+  };
+
+  window.toggleMedico = async (id, active) => {
+    if (!confirm(`¿Estás seguro de ${active ? 'activar' : 'desactivar'} este médico?`)) return;
+    try {
+      const res = await fetch(`${API}/medicos/`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ id, is_active: active })
+      });
+      if (res.ok) {
+        loadMedicos();
+      } else {
+        const errorData = await res.json();
+        alert(`Error: ${errorData.error || 'No se pudo actualizar el estado'}`);
+      }
+    } catch (error) {
+      alert(`Error de red: ${error.message}`);
+    }
+  };
+
+  window.deleteMedico = async (id) => {
+    if (!confirm('¿Eliminar este médico? Esta acción no se puede deshacer.')) return;
+    const res = await fetch(`${API}/medicos/?id=${id}`, { method: 'DELETE', headers });
+    if (res.ok) loadMedicos();
+    else alert('Error al eliminar médico');
+  };
+
+  document.getElementById('openModalBtn').onclick = () => {
+    document.getElementById('medicoForm').reset();
+    document.getElementById('medicoId').value = '';
+    document.getElementById('passwordContainer').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Nuevo Médico';
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('modal').classList.add('flex');
+  };
+
+  document.getElementById('closeModalBtn').onclick = () => {
+    document.getElementById('modal').classList.add('hidden');
+    document.getElementById('modal').classList.remove('flex');
+  };
+
+  window.changePassword = (id, email) => {
+    document.getElementById('passwordMedicoId').value = id;
+    document.getElementById('passwordMedicoEmail').textContent = email;
+    document.getElementById('newPassword').value = '';
+    document.getElementById('passwordModal').classList.remove('hidden');
+    document.getElementById('passwordModal').classList.add('flex');
+  };
+
+  window.closePasswordModal = () => {
+    document.getElementById('passwordModal').classList.add('hidden');
+    document.getElementById('passwordModal').classList.remove('flex');
+  };
+
+  document.getElementById('passwordForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('passwordMedicoId').value;
+    const newPassword = document.getElementById('newPassword').value;
+    
+    if (!newPassword || newPassword.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+    
+    const res = await fetch(`${API}/medicos/`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ id: parseInt(id), password: newPassword })
+    });
+    
+    if (res.ok) {
+      closePasswordModal();
+      alert('Contraseña cambiada exitosamente');
+    } else {
+      alert('Error al cambiar contraseña');
+    }
+  };
+
+  document.getElementById('medicoForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('medicoId').value;
+    const data = {
+      first_name: document.getElementById('first_name').value,
+      last_name: document.getElementById('last_name').value,
+      email: document.getElementById('email').value,
+      telefono: document.getElementById('telefono').value,
+      especialidad_id: document.getElementById('especialidad_id').value || null
+    };
+    
+    if (!id) {
+      const password = document.getElementById('password').value;
+      if (!password || password.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+      data.password = password;
+    }
+    
+    if (id) data.id = parseInt(id);
+    
+    const res = await fetch(`${API}/medicos/`, {
+      method: id ? 'PUT' : 'POST',
+      headers,
+      body: JSON.stringify(data)
+    });
+    
+    if (res.ok) {
+      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('modal').classList.remove('flex');
+      loadMedicos();
+    } else {
+      const err = await res.json();
+      alert(err.error || 'Error al guardar');
+    }
+  };
+
+  loadEspecialidades();
+  loadMedicos();
+</script>

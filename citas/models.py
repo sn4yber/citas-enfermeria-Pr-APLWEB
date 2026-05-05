@@ -25,6 +25,7 @@ class Usuario(AbstractUser):
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(unique=True)
     fecha_nacimiento = models.DateField(null=True, blank=True)
+    especialidad = models.ForeignKey('Especialidad', on_delete=models.SET_NULL, null=True, blank=True, related_name='medicos')
 
     class Meta:
         verbose_name = 'Usuario'

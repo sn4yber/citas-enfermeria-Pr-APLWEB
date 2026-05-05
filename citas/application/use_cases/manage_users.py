@@ -8,7 +8,7 @@ class RegisterUserUseCase:
     def __init__(self, usuario_repository: UsuarioRepository):
         self.usuario_repository = usuario_repository
 
-    def execute(self, first_name: str, email: str, password: str, rol: str, telefono: str = '') -> Usuario:
+    def execute(self, first_name: str, last_name: str, email: str, password: str, rol: str, telefono: str = '') -> Usuario:
         existing = self.usuario_repository.get_by_email(email)
         if existing:
             raise ValueError(f"El correo {email} ya se encuentra registrado.")
@@ -16,6 +16,7 @@ class RegisterUserUseCase:
         usuario = Usuario(
             username=email.split('@')[0],
             first_name=first_name,
+            last_name=last_name,
             email=email,
             password=password,
             rol=rol,

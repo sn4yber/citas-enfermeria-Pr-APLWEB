@@ -1,0 +1,171 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Dashboard Admin">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Panel de Administración</h1>
+    <p class="text-gray-500">Estadísticas y gestión del sistema</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold text-gray-900" id="medicosCount">-</span>
+      </div>
+      <h3 class="text-sm font-medium text-gray-500">Médicos Activos</h3>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold text-gray-900" id="pacientesCount">-</span>
+      </div>
+      <h3 class="text-sm font-medium text-gray-500">Pacientes Registrados</h3>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold text-gray-900" id="especialidadesCount">-</span>
+      </div>
+      <h3 class="text-sm font-medium text-gray-500">Especialidades</h3>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold text-gray-900" id="citasHoyCount">-</span>
+      </div>
+      <h3 class="text-sm font-medium text-gray-500">Citas Hoy</h3>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Citas por Estado</h2>
+      <div class="space-y-4" id="citasPorEstado">
+        <div class="flex justify-between items-center"><span class="text-gray-600">Programadas</span><span class="font-semibold" id="programadasCount">-</span></div>
+        <div class="flex justify-between items-center"><span class="text-gray-600">Completadas</span><span class="font-semibold" id="completadasCount">-</span></div>
+        <div class="flex justify-between items-center"><span class="text-gray-600">Canceladas</span><span class="font-semibold" id="canceladasCount">-</span></div>
+        <div class="flex justify-between items-center"><span class="text-gray-600">No Asistió</span><span class="font-semibold" id="noAsistioCount">-</span></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Médicos por Especialidad</h2>
+      <div id="medicosPorEspecialidad" class="space-y-2">Cargando...</div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Citas Recientes</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Paciente</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Médico</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Fecha</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Estado</th>
+          </tr>
+        </thead>
+        <tbody id="citasRecientesBody">
+          <tr><td colspan="4" class="text-center py-4 text-gray-500">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  if (!token || localStorage.getItem('rol') !== 'admin') {
+    window.location.href = '/admin/login';
+  }
+
+  const API = 'http://localhost:8000/api';
+  const headers = { 'Authorization': `Bearer ${token}` };
+
+  async function loadDashboard() {
+    const [medicosRes, pacientesRes, especialidadesRes, citasRes] = await Promise.all([
+      fetch(`${API}/medicos/`, { headers }),
+      fetch(`${API}/usuarios/`, { headers }),
+      fetch(`${API}/especialidades/`, { headers }),
+      fetch(`${API}/citas/`, { headers })
+    ]);
+
+    const medicos = await medicosRes.json();
+    const pacientes = await pacientesRes.json();
+    const especialidades = await especialidadesRes.json();
+    const citas = await citasRes.json();
+
+    const medicosActivos = medicos.filter(m => m.is_active).length;
+    const pacientesCount = pacientes.filter(p => p.rol === 'paciente').length;
+    const today = new Date().toISOString().split('T')[0];
+    const citasHoy = citas.filter(c => c.fecha === today).length;
+
+    document.getElementById('medicosCount').textContent = medicosActivos;
+    document.getElementById('pacientesCount').textContent = pacientesCount;
+    document.getElementById('especialidadesCount').textContent = especialidades.length;
+    document.getElementById('citasHoyCount').textContent = citasHoy;
+
+    const programadas = citas.filter(c => c.estado === 'programada').length;
+    const completadas = citas.filter(c => c.estado === 'completada').length;
+    const canceladas = citas.filter(c => c.estado === 'cancelada').length;
+    const noAsistio = citas.filter(c => c.estado === 'no_asistio').length;
+
+    document.getElementById('programadasCount').textContent = programadas;
+    document.getElementById('completadasCount').textContent = completadas;
+    document.getElementById('canceladasCount').textContent = canceladas;
+    document.getElementById('noAsistioCount').textContent = noAsistio;
+
+    const medicosPorEsp = {};
+    medicos.forEach(m => {
+      const esp = m.especialidad?.nombre || 'Sin especialidad';
+      medicosPorEsp[esp] = (medicosPorEsp[esp] || 0) + 1;
+    });
+    
+    const espDiv = document.getElementById('medicosPorEspecialidad');
+    if (Object.keys(medicosPorEsp).length === 0) {
+      espDiv.innerHTML = '<p class="text-gray-500 text-sm">No hay médicos registrados</p>';
+    } else {
+      espDiv.innerHTML = Object.entries(medicosPorEsp).map(([esp, count]) => 
+        `<div class="flex justify-between items-center"><span class="text-gray-600">${esp}</span><span class="font-semibold">${count}</span></div>`
+      ).join('');
+    }
+
+    const recientes = citas.slice(0, 5);
+    const tbody = document.getElementById('citasRecientesBody');
+    const estadoClass = { 'programada': 'bg-teal-100 text-teal-700', 'completada': 'bg-green-100 text-green-700', 'cancelada': 'bg-red-100 text-red-700', 'no_asistio': 'bg-orange-100 text-orange-700' };
+    
+    tbody.innerHTML = recientes.length ? recientes.map(c => `
+      <tr class="border-b border-gray-50">
+        <td class="py-3 px-4 text-sm text-gray-900">${c.paciente?.first_name || ''} ${c.paciente?.last_name || ''}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${c.fecha} ${c.hora}</td>
+        <td class="py-3 px-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${estadoClass[c.estado]}">${c.estado}</span></td>
+      </tr>
+    `).join('') : '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay citas</td></tr>';
+  }
+
+  loadDashboard();
+</script>

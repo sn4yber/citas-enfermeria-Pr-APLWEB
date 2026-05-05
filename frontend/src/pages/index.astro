@@ -1,11 +1,308 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import primeraImagen from '../assets/1eraimagen.png';
+import medical1 from '../assets/medical1.png';
+import medical2 from '../assets/medical2.png';
+import medical3 from '../assets/medical3.png';
+import medical4 from '../assets/medical4.png';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+  title="DocClic | Sistema de Gestión de Citas Médicas"
+  description="DocClic es la plataforma digital que centraliza la gestión de citas médicas. Agenda en minutos, sin conflictos de horario, con historial clínico y roles diferenciados."
+>
+  <div class="font-sans antialiased text-gray-800 bg-[#fffbfa] min-h-screen selection:bg-[#0d9488] selection:text-white">
+    <!-- Top Header -->
+    <header id="inicio" class="py-6 px-4 md:px-8 max-w-7xl mx-auto flex items-center justify-between relative z-20">
+      <div class="flex items-center gap-2">
+        <a href="#inicio" aria-label="DocClic inicio">
+          <span class="text-2xl font-bold text-[#0f172a] flex items-center gap-1">
+            <span class="text-3xl text-[#0d9488]">D<span class="inline-block w-4 h-4 rounded-full border-4 border-[#0d9488] translate-y-[2px] mx-[1px]"></span>c</span>Clic
+          </span>
+        </a>
+      </div>
+      
+      <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-[#0f172a]" aria-label="Navegación principal">
+        <a href="#inicio" class="hover:text-[#0d9488] transition-colors">Inicio</a>
+        <a href="#como-funciona" class="hover:text-[#0d9488] transition-colors">Cómo funciona</a>
+        <a href="#beneficios" class="hover:text-[#0d9488] transition-colors">Beneficios</a>
+      </nav>
+
+      <div class="flex items-center gap-4">
+        <a href="/auth/login" class="hidden sm:block text-sm font-medium text-[#0f172a] hover:text-[#0d9488]">Ingresar</a>
+        <a href="/auth/register" class="px-6 py-2.5 rounded-full bg-[#0d9488] text-white font-medium text-sm hover:bg-[#0f766e] hover:text-white transition-all border border-transparent shadow-md shadow-[#0d9488]/20">
+          Registrarse
+        </a>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative max-w-7xl mx-auto px-4 md:px-8 pt-12 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <!-- Decoración de fondo (Círculo melocotón) -->
+      <div class="absolute top-1/2 left-1/2 lg:left-3/4 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#f0fdfa] rounded-full -z-10 blur-xl opacity-70"></div>
+
+      <!-- Hero Left -->
+      <div class="relative z-10 space-y-8">
+        <h2 class="text-5xl md:text-6xl lg:text-[70px] font-bold text-[#0f172a] leading-[1.1] tracking-tight">
+          Sistema de gestión<br/>de citas médicas.
+        </h2>
+        
+        <ul class="space-y-3 text-lg font-medium text-gray-500">
+          <li class="flex items-center gap-3">
+            <span class="text-[#0f172a]">1.</span> Gestión centralizada de la agenda
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="text-[#0f172a]">2.</span> Prevención de conflictos de horario
+          </li>
+          <li class="flex items-center gap-3">
+            <span class="text-[#0f172a]">3.</span> Múltiples roles de usuario
+          </li>
+        </ul>
+
+        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+          <a href="/auth/register" class="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#0d9488] text-white font-semibold rounded-2xl hover:bg-[#0f766e] transition-colors shadow-lg shadow-[#0d9488]/30">
+            Regístrate ahora
+            <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
+          <a href="/auth/login" class="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#f8fafc] text-[#0f172a] font-semibold rounded-2xl hover:bg-emerald-100 transition-colors">
+            Ya tengo una cuenta
+          </a>
+        </div>
+
+        <div class="flex gap-4 pt-6">
+          <div class="flex items-center gap-3 p-4 border border-gray-100 rounded-2xl bg-white shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </div>
+            <div>
+              <div class="font-bold text-[#0f172a]">+200</div>
+              <div class="text-xs text-gray-500 font-medium">Médicos activos</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-4 border border-gray-100 rounded-2xl bg-white shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+              <div class="font-bold text-[#0f172a]">100%</div>
+              <div class="text-xs text-gray-500 font-medium">Agendas eficientes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Right: Mockup Illustration -->
+      <div class="relative lg:-mr-12 z-10 w-full flex justify-center items-center">
+        <!-- Renderizado de la imagen superior -->
+        <div class="relative w-full max-w-[550px] h-[550px] flex items-center justify-center">
+            <img src={primeraImagen.src} alt="Atención Médica" class="object-contain w-full h-full relative z-10 hover:scale-[1.02] transition-transform duration-500 rounded-3xl" />
+
+            <!-- Floating chat bubbles para mantener concepto de cita médica-->
+            <div class="absolute top-12 -left-8 md:-left-12 z-20 bg-white p-3 rounded-2xl shadow-lg border border-gray-100 max-w-[220px]">
+              <div class="flex gap-2 items-start">
+                <div class="w-8 h-8 rounded-full bg-teal-100 shrink-0"></div>
+                <div class="text-xs text-gray-600">Nueva cita médica confirmada exitosamente.</div>
+              </div>
+            </div>
+            
+            <div class="absolute top-40 -left-2 md:-left-4 z-20 bg-white p-3 rounded-2xl shadow-lg border border-gray-100 max-w-[200px]">
+              <div class="flex gap-2 items-start">
+                <div class="text-xs text-gray-600 text-right">No existen conflictos en su nuevo agendamiento.</div>
+                <div class="w-8 h-8 rounded-full bg-emerald-100 shrink-0"></div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Beneficios Section -->
+    <section id="beneficios" class="relative max-w-7xl mx-auto px-4 md:px-8 py-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <!-- Decoración fondo -->
+      <div class="absolute top-1/4 -left-32 w-[500px] h-[500px] bg-[#f0fdfaa0] rounded-full -z-10 blur-2xl"></div>
+
+      <!-- Image Mockup -->
+      <div class="w-full aspect-square bg-[#f8fafc] rounded-full relative flex items-end justify-center transform lg:translate-x-[-10%] overflow-hidden shadow-inner">
+         <img src={medical2.src} alt="Atención médica" class="absolute bottom-0 w-3/4 object-cover object-bottom" />
+      </div>
+
+      <!-- Content -->
+      <div class="space-y-12">
+        <div>
+          <h4 class="text-[#0f172a] font-semibold text-lg tracking-wide uppercase mb-2">CARACTERÍSTICAS DEL SISTEMA</h4>
+          <h2 class="text-4xl md:text-5xl font-bold text-[#0f172a]">Optimización y administración centralizada</h2>
+        </div>
+
+        <div class="space-y-8">
+          <div class="flex gap-5">
+            <div class="w-14 h-14 shrink-0 rounded-full bg-emerald-50 flex items-center justify-center text-[#0d9488]">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[#0f172a] mb-2">Gestión integral</h3>
+              <p class="text-gray-500 leading-relaxed">Una plataforma digital que mejora la organización de la agenda médica y facilita la interacción entre pacientes, médicos y administradores.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-5">
+            <div class="w-14 h-14 shrink-0 rounded-full bg-slate-50 flex items-center justify-center text-[#0d9488]">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[#0f172a] mb-2">Prevención de conflictos</h3>
+              <p class="text-gray-500 leading-relaxed">Evita problemas comunes como la duplicación de citas o errores en el agendamiento manual gracias a las validaciones del sistema.</p>
+            </div>
+          </div>
+
+          <div class="flex gap-5">
+            <div class="w-14 h-14 shrink-0 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[#0f172a] mb-2">Roles y seguridad</h3>
+              <p class="text-gray-500 leading-relaxed">Mecanismos de autenticación seguros y accesos diferenciados para pacientes, médicos y administradores protegiendo la información.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works steps -->
+    <section id="como-funciona" class="py-24 bg-white">
+      <div class="max-w-4xl mx-auto px-4 md:px-8">
+        <div class="text-center mb-20">
+          <h4 class="text-[#0f172a] font-semibold tracking-wide uppercase mb-3">CÓMO FUNCIONA</h4>
+          <h2 class="text-4xl md:text-5xl font-bold text-[#0f172a] mb-4">Guía paso a paso</h2>
+          <p class="text-xl text-[#0f172a] font-medium">Tu plataforma de agendamiento disponible 24/7</p>
+        </div>
+
+        <div class="space-y-24">
+          <!-- Step 1 -->
+          <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="w-full md:w-1/2">
+              <div class="aspect-video bg-teal-50 rounded-3xl relative p-6 overflow-hidden flex items-end justify-center shadow-inner">
+                 <img src={medical3.src} alt="Paciente agendando cita" class="w-2/3 object-cover object-bottom relative z-10" />
+                 <div class="absolute -right-4 top-1/4 bg-white p-4 rounded-xl shadow-lg border border-gray-100 max-w-[200px] z-20">
+                    <div class="w-16 h-2 bg-teal-200 rounded mb-2"></div>
+                    <div class="w-24 h-2 bg-gray-200 rounded"></div>
+                 </div>
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 space-y-4">
+              <div class="text-sm font-semibold text-gray-400">Paso 1</div>
+              <h3 class="text-2xl font-bold text-[#0f172a]">Ingresa o Regístrate</h3>
+              <p class="text-gray-500">Crea tu cuenta utilizando tus datos personales o accede de inmediato a tu panel de control mediante inicio de sesión seguro.</p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="flex flex-col md:flex-row-reverse items-center gap-12">
+            <div class="w-full md:w-1/2">
+              <div class="aspect-video bg-red-50 rounded-3xl relative p-6 overflow-hidden flex items-end justify-center shadow-inner">
+                 <img src={medical4.src} alt="Doctor revisando" class="w-2/3 object-cover object-bottom relative z-10" />
+                 <div class="absolute -left-4 top-1/4 bg-white p-4 rounded-xl shadow-lg border border-gray-100 max-w-[200px] z-20">
+                    <div class="flex items-center gap-2 mb-2">
+                       <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+                       <div class="font-bold text-xs">Citas Sin Conflicto</div>
+                    </div>
+                 </div>
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 space-y-4">
+              <div class="text-sm font-semibold text-gray-400">Paso 2</div>
+              <h3 class="text-2xl font-bold text-[#0f172a]">Busca y programa tu cita</h3>
+              <p class="text-gray-500">Explora médicos por especialidad, escoge entre los horarios disponibles y reserva sin ninguna posibilidad de duplicación de agenda.</p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="w-full md:w-1/2">
+              <div class="aspect-video bg-emerald-50 rounded-3xl relative p-6 overflow-hidden flex items-end justify-center shadow-inner">
+                 <img src={medical1.src} alt="Atención médica" class="w-2/3 object-cover object-bottom relative z-10" />
+              </div>
+            </div>
+            <div class="w-full md:w-1/2 space-y-4">
+              <div class="text-sm font-semibold text-gray-400">Paso 3</div>
+              <h3 class="text-2xl font-bold text-[#0f172a]">Gestión eficiente</h3>
+              <p class="text-gray-500">Mantén un registro histórico de las citas realizadas. Los datos se actualizan de forma transparente garantizando la integridad institucional.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="cta" class="max-w-6xl mx-auto px-4 md:px-8 py-24 mb-10 bg-[#f9fafb] rounded-[3rem]">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+         <div class="text-center md:text-left">
+            <h2 class="text-4xl font-bold text-[#0f172a] mb-4">Optimiza la gestión en tu centro médico</h2>
+            <p class="text-gray-500 mb-8 max-w-md mx-auto md:mx-0">Dile adiós a los procesos manuales y los turnos duplicados. Automatiza la reserva y administración de citas médicas en tu institución con una arquitectura escalable y escalabilidad asegurada.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+              <a href="/auth/register" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#0f172a] text-white rounded-xl font-medium hover:bg-black transition-colors focus:ring-4 focus:ring-gray-200">
+                Regístrate ahora
+                <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </a>
+              <a href="/auth/login" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-[#0f172a] shadow-sm font-medium rounded-xl hover:bg-gray-50 border border-gray-200 transition-colors">
+                Ingresar al portal
+              </a>
+            </div>
+         </div>
+         <div class="hidden md:flex justify-center relative">
+            <div class="w-[300px] bg-white border border-gray-100 rounded-3xl shadow-xl relative overflow-hidden p-6 z-10">
+               <div class="flex items-center gap-4 mb-6">
+                 <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-[#0d9488] font-bold">D</div>
+                 <div>
+                   <div class="font-bold text-[#0f172a]">Dr. Asignado</div>
+                   <div class="text-xs text-gray-500">Medicina General</div>
+                 </div>
+               </div>
+               <div class="space-y-3">
+                 <div class="w-full h-8 bg-gray-50 rounded-lg"></div>
+                 <div class="w-3/4 h-8 bg-gray-50 rounded-lg"></div>
+                 <div class="w-full h-12 bg-[#0d9488]/10 text-[#0d9488] rounded-lg mt-4 flex items-center justify-center font-bold text-sm">Cita Confirmada</div>
+               </div>
+            </div>
+            <!-- Shapes -->
+            <div class="absolute -right-4 top-1/4 w-24 h-24 bg-emerald-100 rounded-full blur-2xl -z-0"></div>
+         </div>
+      </div>
+    </section>
+
+    <!-- Essential Footer -->
+    <footer class="py-12 border-t border-gray-100 max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start gap-12">
+      <div>
+        <h1 class="text-xl font-bold text-[#0f172a] flex items-center gap-1 mb-4">
+          <span class="text-2xl text-[#0d9488]">D<span class="inline-block w-3 h-3 rounded-full border-[3px] border-[#0d9488] translate-y-[1px]"></span>c</span>Clic
+        </h1>
+        <p class="text-sm text-gray-400">&copy; 2026 DocClic. Todos los derechos reservados.</p>
+      </div>
+
+      <div class="flex gap-16 md:gap-24 text-sm">
+         <div>
+            <h5 class="font-bold text-[#0f172a] mb-4">Plataforma</h5>
+            <ul class="space-y-3 text-gray-500">
+               <li><a href="/auth/register" class="hover:text-[#0d9488]">Registro</a></li>
+               <li><a href="/auth/login" class="hover:text-[#0d9488]">Acceso a Portal</a></li>
+               <li><a href="#beneficios" class="hover:text-[#0d9488]">Beneficios</a></li>
+            </ul>
+         </div>
+         <div>
+            <h5 class="font-bold text-[#0f172a] mb-4">Sistema</h5>
+            <ul class="space-y-3 text-gray-500">
+               <li><a href="#como-funciona" class="hover:text-[#0d9488]">Cómo funciona</a></li>
+               <li><a href="#beneficios" class="hover:text-[#0d9488]">Características</a></li>
+               <li><a href="#cta" class="hover:text-[#0d9488]">Comienza ahora</a></li>
+            </ul>
+         </div>
+         <div>
+            <h5 class="font-bold text-[#0f172a] mb-4">Arquitectura</h5>
+            <ul class="space-y-3 text-gray-500">
+               <li><a href="#" class="hover:text-[#0d9488]">Astro + Tailwind CSS</a></li>
+               <li><a href="#" class="hover:text-[#0d9488]">Django REST API</a></li>
+               <li><a href="#" class="hover:text-[#0d9488]">PostgreSQL</a></li>
+            </ul>
+         </div>
+      </div>
+    </footer>
+  </div>
+</BaseLayout>

@@ -1,0 +1,245 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Gestión Pacientes">
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Pacientes Registrados</h1>
+      <p class="text-gray-500">Lista de todos los pacientes del sistema</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre o email..." class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
+    </div>
+    <div id="loading" class="text-center py-8 text-gray-500">Cargando...</div>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-100 bg-gray-50">
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Nombre</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Teléfono</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Fecha Registro</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Citas Totales</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Estado</th>
+            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="pacientesBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Editar Paciente</h2>
+      <form id="pacienteForm" class="space-y-4">
+        <input type="hidden" id="pacienteId" />
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" id="first_name" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+            <input type="text" id="last_name" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input type="text" id="telefono" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <select id="is_active" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500">
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        </div>
+        <div class="flex gap-3 pt-4">
+          <button type="submit" class="flex-1 bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800">Guardar</button>
+          <button type="button" id="closeEditModal" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="detailModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Detalle del Paciente</h2>
+      <div id="pacienteDetalle" class="space-y-4"></div>
+      <div class="mt-6 flex justify-end">
+        <button id="closeDetailModal" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // @ts-nocheck
+  const token = localStorage.getItem('token');
+  if (!token || localStorage.getItem('rol') !== 'admin') {
+    window.location.href = '/admin/login';
+  }
+
+  const API = 'http://localhost:8000/api';
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+  let todosPacientes = [];
+  let todasCitas = [];
+
+  async function loadData() {
+    document.getElementById('loading').classList.remove('hidden');
+    const [pacientesRes, citasRes] = await Promise.all([
+      fetch(`${API}/usuarios/`, { headers }),
+      fetch(`${API}/citas/`, { headers })
+    ]);
+    document.getElementById('loading').classList.add('hidden');
+
+    if (pacientesRes.ok && citasRes.ok) {
+      todosPacientes = await pacientesRes.json();
+      todasCitas = await citasRes.json();
+      renderPacientes(todosPacientes);
+    }
+  }
+
+  function getCitasCount(pacienteId) {
+    return todasCitas.filter(c => c.paciente?.id === pacienteId || c.paciente_id === pacienteId).length;
+  }
+
+  function getCitasPaciente(pacienteId) {
+    return todasCitas.filter(c => c.paciente?.id === pacienteId || c.paciente_id === pacienteId);
+  }
+
+  function renderPacientes(pacientes) {
+    const pacientesRol = pacientes.filter(p => p.rol === 'paciente');
+    const tbody = document.getElementById('pacientesBody');
+    
+    if (pacientesRol.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No hay pacientes registrados</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = pacientesRol.map(p => `
+      <tr class="border-b border-gray-50 hover:bg-gray-50">
+        <td class="py-3 px-4 text-sm text-gray-900">${p.first_name} ${p.last_name}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${p.email}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${p.telefono || '-'}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${p.date_joined ? new Date(p.date_joined).toLocaleDateString() : '-'}</td>
+        <td class="py-3 px-4 text-sm text-gray-600">${getCitasCount(p.id)}</td>
+        <td class="py-3 px-4">
+          <span class="px-2 py-1 text-xs font-medium rounded-full ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+            ${p.is_active ? 'Activo' : 'Inactivo'}
+          </span>
+        </td>
+        <td class="py-3 px-4">
+          <button onclick="verDetalle(${p.id})" class="text-slate-900 hover:text-slate-800 text-sm mr-2">Ver</button>
+          <button onclick="editarPaciente(${p.id})" class="text-slate-900 hover:text-teal-700 text-sm mr-2">Editar</button>
+          <button onclick="eliminarPaciente(${p.id})" class="text-red-600 hover:text-red-700 text-sm">Eliminar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  window.verDetalle = (id) => {
+    const paciente = todosPacientes.find(p => p.id === id);
+    const citas = getCitasPaciente(id);
+    const estadoClass = { 'programada': 'bg-teal-100 text-teal-700', 'completada': 'bg-green-100 text-green-700', 'cancelada': 'bg-red-100 text-red-700', 'no_asistio': 'bg-orange-100 text-orange-700' };
+    
+    const div = document.getElementById('pacienteDetalle');
+    div.innerHTML = `
+      <div class="grid grid-cols-2 gap-4">
+        <div><p class="text-sm text-gray-500">Nombre</p><p class="font-medium">${paciente.first_name} ${paciente.last_name}</p></div>
+        <div><p class="text-sm text-gray-500">Email</p><p class="font-medium">${paciente.email}</p></div>
+        <div><p class="text-sm text-gray-500">Teléfono</p><p class="font-medium">${paciente.telefono || '-'}</p></div>
+        <div><p class="text-sm text-gray-500">Estado</p><span class="px-2 py-1 text-xs font-medium rounded-full ${paciente.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${paciente.is_active ? 'Activo' : 'Inactivo'}</span></div>
+        <div><p class="text-sm text-gray-500">Fecha Registro</p><p class="font-medium">${paciente.date_joined ? new Date(paciente.date_joined).toLocaleDateString() : '-'}</p></div>
+        <div><p class="text-sm text-gray-500">Total Citas</p><p class="font-medium">${citas.length}</p></div>
+      </div>
+      <div class="mt-4">
+        <h3 class="font-semibold text-gray-900 mb-2">Historial de Citas</h3>
+        ${citas.length === 0 ? '<p class="text-gray-500 text-sm">Sin citas</p>' : citas.map(c => `
+          <div class="border rounded-lg p-3 mb-2">
+            <div class="flex justify-between">
+              <span class="font-medium">${c.fecha} ${c.hora}</span>
+              <span class="px-2 py-1 text-xs rounded-full ${estadoClass[c.estado]}">${c.estado}</span>
+            </div>
+            <p class="text-sm text-gray-600">Médico: ${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</p>
+            <p class="text-sm text-gray-500">${c.motivo || 'Sin motivo'}</p>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    document.getElementById('detailModal').classList.remove('hidden');
+    document.getElementById('detailModal').classList.add('flex');
+  };
+
+  window.editarPaciente = (id) => {
+    const p = todosPacientes.find(p => p.id === id);
+    document.getElementById('pacienteId').value = id;
+    document.getElementById('first_name').value = p.first_name;
+    document.getElementById('last_name').value = p.last_name;
+    document.getElementById('email').value = p.email;
+    document.getElementById('telefono').value = p.telefono || '';
+    document.getElementById('is_active').value = p.is_active.toString();
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').classList.add('flex');
+  };
+
+  window.eliminarPaciente = async (id) => {
+    if (!confirm('¿Eliminar este paciente? Esta acción no se puede deshacer.')) return;
+    const res = await fetch(`${API}/usuarios/?id=${id}`, { method: 'DELETE', headers });
+    if (res.ok) loadData();
+    else alert('Error al eliminar paciente');
+  };
+
+  document.getElementById('closeEditModal').onclick = () => {
+    document.getElementById('editModal').classList.add('hidden');
+    document.getElementById('editModal').classList.remove('flex');
+  };
+
+  document.getElementById('closeDetailModal').onclick = () => {
+    document.getElementById('detailModal').classList.add('hidden');
+    document.getElementById('detailModal').classList.remove('flex');
+  };
+
+  document.getElementById('pacienteForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('pacienteId').value;
+    const data = {
+      id: parseInt(id),
+      first_name: document.getElementById('first_name').value,
+      last_name: document.getElementById('last_name').value,
+      email: document.getElementById('email').value,
+      telefono: document.getElementById('telefono').value,
+      is_active: document.getElementById('is_active').value === 'true'
+    };
+    const res = await fetch(`${API}/usuarios/`, { method: 'PUT', headers, body: JSON.stringify(data) });
+    if (res.ok) {
+      document.getElementById('editModal').classList.add('hidden');
+      document.getElementById('editModal').classList.remove('flex');
+      loadData();
+    } else {
+      alert('Error al guardar');
+    }
+  };
+
+  document.getElementById('searchInput').oninput = (e) => {
+    const term = e.target.value.toLowerCase();
+    const filtered = todosPacientes.filter(p => 
+      p.rol === 'paciente' && (
+        (p.first_name + ' ' + p.last_name).toLowerCase().includes(term) ||
+        p.email.toLowerCase().includes(term)
+      )
+    );
+    renderPacientes(filtered);
+  };
+
+  loadData();
+</script>
