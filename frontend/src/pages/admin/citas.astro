@@ -2,224 +2,754 @@
 import AdminLayout from '../../layouts/AdminLayout.astro';
 ---
 
-<AdminLayout title="Gestión de Citas">
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-900">Todas las Citas</h1>
-    <p class="text-gray-500">Gestiona, reprograma y cancela citas</p>
-  </div>
+<AdminLayout title="Gestión SGSSS">
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <p class="text-sm text-gray-500">Total Citas</p>
-      <p class="text-2xl font-bold text-gray-900" id="totalCitas">-</p>
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-xl font-bold text-gray-900">Panel de Gestión SGSSS</h1>
+      <p class="text-gray-400 text-sm mt-0.5">Flujo: Cita General → Orden Médica → Autorización EPS → Cita Especialista</p>
     </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <p class="text-sm text-gray-500">Programadas</p>
-      <p class="text-2xl font-bold text-slate-900" id="programadasCount">-</p>
-    </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <p class="text-sm text-gray-500">Completadas</p>
-      <p class="text-2xl font-bold text-green-600" id="completadasCount">-</p>
-    </div>
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <p class="text-sm text-gray-500">Canceladas</p>
-      <p class="text-2xl font-bold text-red-600" id="canceladasCount">-</p>
+    <div class="flex items-center gap-2 text-xs text-gray-400">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+      Sistema activo
     </div>
   </div>
 
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="p-4 border-b border-gray-100 flex gap-4 flex-wrap">
-      <input type="text" id="searchInput" placeholder="Buscar por paciente o médico..." class="flex-1 min-w-48 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" />
-      <select id="filterEstado" class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
-        <option value="">Todos los estados</option>
-        <option value="programada">Programada</option>
-        <option value="completada">Completada</option>
-        <option value="cancelada">Cancelada</option>
-        <option value="no_asistio">No Asistió</option>
-      </select>
+  <!-- Stats rápidas -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Citas</p>
+      <p class="text-2xl font-bold text-gray-900" id="statTotal">-</p>
     </div>
-    <div id="loading" class="text-center py-8 text-gray-500">Cargando...</div>
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-gray-100 bg-gray-50">
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Paciente</th>
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Médico</th>
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Fecha</th>
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Hora</th>
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Motivo</th>
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Estado</th>
-            <th class="text-left py-3 px-4 text-sm font-medium text-gray-500">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="citasBody"></tbody>
-      </table>
+    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Programadas</p>
+      <p class="text-2xl font-bold text-teal-600" id="statProgramadas">-</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Completadas</p>
+      <p class="text-2xl font-bold text-emerald-600" id="statCompletadas">-</p>
+    </div>
+    <div class="bg-amber-50 rounded-xl p-4 border border-amber-100 shadow-sm">
+      <p class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Órd. Pendientes</p>
+      <p class="text-2xl font-bold text-amber-600" id="statOrdenesPend">-</p>
+    </div>
+    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Especializadas</p>
+      <p class="text-2xl font-bold text-slate-600" id="statEspecializadas">-</p>
     </div>
   </div>
 
-  <div id="modalReprogramar" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Reprogramar Cita</h2>
-      <form id="reprogramarForm" class="space-y-4">
-        <input type="hidden" id="citaId" />
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Fecha</label>
-          <input type="date" id="nuevaFecha" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva Hora</label>
-          <input type="time" id="nuevaHora" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nuevo Estado</label>
-          <select id="nuevoEstado" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500">
-            <option value="programada">Programada</option>
-            <option value="completada">Completada</option>
-            <option value="cancelada">Cancelada</option>
-            <option value="no_asistio">No Asistió</option>
-          </select>
-        </div>
-        <div class="flex gap-3 pt-4">
-          <button type="submit" class="flex-1 bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800">Guardar</button>
-          <button type="button" onclick="closeReprogramar()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancelar</button>
-        </div>
-      </form>
-    </div>
+  <!-- Tabs -->
+  <div class="flex gap-1.5 mb-5 bg-gray-100/70 p-1 rounded-xl w-fit">
+    <button id="tabCitas" onclick="showTab('citas')"
+      class="tab-btn px-4 py-2 bg-white text-gray-900 rounded-lg text-sm font-semibold shadow-sm transition-all">
+      Citas
+    </button>
+    <button id="tabOrdenes" onclick="showTab('ordenes')"
+      class="tab-btn px-4 py-2 text-gray-500 rounded-lg text-sm font-medium transition-all hover:bg-white/70 flex items-center gap-1.5">
+      Órdenes Médicas
+      <span id="badgeOrdenes" class="hidden text-xs font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded-full leading-none"></span>
+    </button>
+    <button id="tabEPS" onclick="showTab('eps')"
+      class="tab-btn px-4 py-2 text-gray-500 rounded-lg text-sm font-medium transition-all hover:bg-white/70">
+      EPS
+    </button>
   </div>
 
-  <div id="modalDetalle" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Detalle de Cita</h2>
-      <div id="citaDetalle" class="space-y-4"></div>
-      <div class="mt-6 flex justify-end gap-3">
-        <button onclick="closeDetalle()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cerrar</button>
+  <!-- ══ PANEL CITAS ══════════════════════════════════════ -->
+  <div id="panelCitas">
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Filtros -->
+      <div class="p-4 border-b border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-2">
+        <input type="text" id="searchInput" placeholder="Buscar paciente o médico..."
+          class="col-span-2 md:col-span-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 outline-none" />
+        <select id="filterEstado" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 outline-none bg-white">
+          <option value="">Todos los estados</option>
+          <option value="programada">Programada</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+          <option value="no_asistio">No Asistió</option>
+        </select>
+        <select id="filterTipoCita" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 outline-none bg-white">
+          <option value="">Todos los tipos</option>
+          <option value="general">Medicina General</option>
+          <option value="especializada">Especialista</option>
+          <option value="prioritaria">Prioritaria</option>
+        </select>
+        <select id="filterRegimen" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-400 outline-none bg-white">
+          <option value="">Todos los regímenes</option>
+          <option value="contributivo">Contributivo</option>
+          <option value="subsidiado">Subsidiado</option>
+        </select>
+      </div>
+
+      <div id="loadingCitas" class="text-center py-10 text-gray-400 text-sm">Cargando citas...</div>
+      <div class="overflow-x-auto">
+        <table class="w-full hidden" id="citasTable">
+          <thead>
+            <tr class="border-b border-gray-100 bg-gray-50/80">
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Paciente / EPS</th>
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Médico</th>
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Fecha · Hora</th>
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Tipo</th>
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Estado</th>
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Autorización</th>
+              <th class="text-left py-2.5 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="citasBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
+
+  <!-- ══ PANEL ÓRDENES ══════════════════════════════════════ -->
+  <div id="panelOrdenes" class="hidden space-y-4">
+
+    <!-- Barra de filtros -->
+    <div class="flex flex-wrap gap-2 items-center">
+      <input type="text" id="searchOrdenes" placeholder="Buscar paciente o especialidad..."
+        class="flex-1 min-w-48 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-400 outline-none bg-white" />
+      <div class="flex bg-gray-100 p-0.5 rounded-xl">
+        <button onclick="filterOrdenes('pendiente_autorizacion')" id="fOrdPend"
+          class="fOrd-btn px-3 py-1.5 bg-white rounded-lg text-xs font-semibold text-amber-700 shadow-sm transition-all">
+          Pendientes
+        </button>
+        <button onclick="filterOrdenes('autorizada')" id="fOrdAut"
+          class="fOrd-btn px-3 py-1.5 text-gray-500 rounded-lg text-xs font-medium transition-all hover:bg-white/60">
+          Autorizadas
+        </button>
+        <button onclick="filterOrdenes('rechazada')" id="fOrdRech"
+          class="fOrd-btn px-3 py-1.5 text-gray-500 rounded-lg text-xs font-medium transition-all hover:bg-white/60">
+          Rechazadas
+        </button>
+        <button onclick="filterOrdenes('')" id="fOrdTodas"
+          class="fOrd-btn px-3 py-1.5 text-gray-500 rounded-lg text-xs font-medium transition-all hover:bg-white/60">
+          Todas
+        </button>
+      </div>
+    </div>
+
+    <div id="ordenesList" class="space-y-3">
+      <div class="text-center py-10 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">Cargando órdenes...</div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL EPS ══════════════════════════════════════ -->
+  <div id="panelEPS" class="hidden space-y-4">
+    <div class="grid md:grid-cols-5 gap-4 items-start">
+
+      <!-- Formulario nueva EPS -->
+      <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <h3 class="text-sm font-bold text-gray-900 mb-4">Registrar Nueva EPS</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Nombre</label>
+            <input type="text" id="epsNombre" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none text-sm bg-gray-50" placeholder="EPS Sura" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Código RNOS</label>
+            <input type="text" id="epsCodigo" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none text-sm bg-gray-50 font-mono" placeholder="EPS001" />
+          </div>
+          <div id="epsError" class="hidden p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
+          <button onclick="guardarEPS()" class="w-full py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors text-sm">
+            Guardar EPS
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista EPS -->
+      <div class="md:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-gray-100 bg-gray-50/50">
+          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">EPS Registradas</p>
+        </div>
+        <div id="epsList">
+          <div class="text-center py-8 text-gray-400 text-sm">Cargando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </AdminLayout>
 
-<script>
-  // @ts-nocheck
-  const token = localStorage.getItem('token');
-  if (!token || localStorage.getItem('rol') !== 'admin') {
-    window.location.href = '/admin/login';
-  }
-
-  const API = 'http://localhost:8000/api';
-  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-  let todasCitas = [];
-
-  function getEstadoClass(estado) {
-    const classes = { 'programada': 'bg-teal-100 text-teal-700', 'completada': 'bg-green-100 text-green-700', 'cancelada': 'bg-red-100 text-red-700', 'no_asistio': 'bg-orange-100 text-orange-700' };
-    return classes[estado] || 'bg-gray-100 text-gray-700';
-  }
-
-  function updateStats() {
-    document.getElementById('totalCitas').textContent = todasCitas.length;
-    document.getElementById('programadasCount').textContent = todasCitas.filter(c => c.estado === 'programada').length;
-    document.getElementById('completadasCount').textContent = todasCitas.filter(c => c.estado === 'completada').length;
-    document.getElementById('canceladasCount').textContent = todasCitas.filter(c => c.estado === 'cancelada').length;
-  }
-
-  function renderCitas(citas) {
-    const tbody = document.getElementById('citasBody');
-    if (citas.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-500">No hay citas</td></tr>';
-      return;
-    }
-    tbody.innerHTML = citas.map(c => `
-      <tr class="border-b border-gray-50 hover:bg-gray-50">
-        <td class="py-3 px-4 text-sm text-gray-900">${c.paciente?.first_name || ''} ${c.paciente?.last_name || ''}</td>
-        <td class="py-3 px-4 text-sm text-gray-600">${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</td>
-        <td class="py-3 px-4 text-sm text-gray-600">${c.fecha}</td>
-        <td class="py-3 px-4 text-sm text-gray-600">${c.hora}</td>
-        <td class="py-3 px-4 text-sm text-gray-600 max-w-xs truncate">${c.motivo || '-'}</td>
-        <td class="py-3 px-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${getEstadoClass(c.estado)}">${c.estado}</span></td>
-        <td class="py-3 px-4">
-          <button onclick="verDetalle(${c.id})" class="text-slate-900 hover:text-slate-800 text-sm mr-2">Ver</button>
-          <button onclick="openReprogramar(${c.id}, '${c.fecha}', '${c.hora}', '${c.estado}')" class="text-slate-900 hover:text-teal-700 text-sm mr-2">Editar</button>
-          ${c.estado !== 'cancelada' ? `<button onclick="cancelarCita(${c.id})" class="text-red-600 hover:text-red-700 text-sm">Cancelar</button>` : ''}
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  async function loadCitas() {
-    document.getElementById('loading').classList.remove('hidden');
-    const res = await fetch(`${API}/citas/`, { headers });
-    document.getElementById('loading').classList.add('hidden');
-    if (res.ok) {
-      todasCitas = await res.json();
-      updateStats();
-      renderCitas(todasCitas);
-    }
-  }
-
-  window.verDetalle = (id) => {
-    const c = todasCitas.find(c => c.id === id);
-    const div = document.getElementById('citaDetalle');
-    div.innerHTML = `
-      <div class="grid grid-cols-2 gap-4">
-        <div><p class="text-sm text-gray-500">Paciente</p><p class="font-medium">${c.paciente?.first_name || ''} ${c.paciente?.last_name || ''}</p></div>
-        <div><p class="text-sm text-gray-500">Médico</p><p class="font-medium">${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</p></div>
-        <div><p class="text-sm text-gray-500">Fecha</p><p class="font-medium">${c.fecha}</p></div>
-        <div><p class="text-sm text-gray-500">Hora</p><p class="font-medium">${c.hora}</p></div>
-        <div><p class="text-sm text-gray-500">Estado</p><span class="px-2 py-1 text-xs font-medium rounded-full ${getEstadoClass(c.estado)}">${c.estado}</span></div>
-        <div><p class="text-sm text-gray-500">Creado</p><p class="font-medium">${c.creado_en ? new Date(c.creado_en).toLocaleString() : '-'}</p></div>
+<!-- ══ MODAL AUTORIZAR / RECHAZAR ORDEN ══════════════════ -->
+<div id="modalAutorizacion" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+    <div class="p-5 border-b border-gray-100 flex items-start justify-between">
+      <div>
+        <h2 class="text-base font-bold text-gray-900">Gestionar Autorización EPS</h2>
+        <p class="text-sm text-gray-400 mt-0.5" id="autOrdenInfo"></p>
       </div>
-      <div><p class="text-sm text-gray-500">Motivo</p><p class="font-medium">${c.motivo || 'Sin motivo'}</p></div>
-      <div><p class="text-sm text-gray-500">Observaciones</p><p class="font-medium">${c.observaciones || 'Sin observaciones'}</p></div>
-    `;
-    document.getElementById('modalDetalle').classList.remove('hidden');
-    document.getElementById('modalDetalle').classList.add('flex');
-  };
+      <button onclick="closeAutorizacion()" class="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 mt-0.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
 
-  window.closeDetalle = () => {
-    document.getElementById('modalDetalle').classList.add('hidden');
-    document.getElementById('modalDetalle').classList.remove('flex');
-  };
+    <!-- Tabs dentro del modal -->
+    <div class="flex border-b border-gray-100">
+      <button id="modTabAut" onclick="switchModalTab('autorizar')"
+        class="flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-500 bg-teal-50/50 transition-all">
+        Autorizar
+      </button>
+      <button id="modTabRech" onclick="switchModalTab('rechazar')"
+        class="flex-1 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:bg-gray-50 transition-all">
+        Rechazar
+      </button>
+    </div>
 
-  window.openReprogramar = (id, fecha, hora, estado) => {
-    document.getElementById('citaId').value = id;
-    document.getElementById('nuevaFecha').value = fecha;
-    document.getElementById('nuevaHora').value = hora;
-    document.getElementById('nuevoEstado').value = estado;
-    document.getElementById('modalReprogramar').classList.remove('hidden');
-    document.getElementById('modalReprogramar').classList.add('flex');
-  };
+    <input type="hidden" id="autOrdenId" />
 
-  window.closeReprogramar = () => {
-    document.getElementById('modalReprogramar').classList.add('hidden');
-    document.getElementById('modalReprogramar').classList.remove('flex');
-  };
+    <!-- Panel autorizar -->
+    <div id="panelModalAut" class="p-5 space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">EPS</label>
+          <select id="autEpsId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none text-sm bg-gray-50">
+            <option value="">Seleccionar EPS...</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">N° Autorización</label>
+          <input type="text" id="autNumero" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none text-sm bg-gray-50 font-mono" placeholder="AUT-2026-00001" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Fecha autorización</label>
+          <input type="date" id="autFecha" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none text-sm bg-gray-50" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Vigencia hasta</label>
+          <input type="date" id="autVigencia" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none text-sm bg-gray-50" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Servicios autorizados</label>
+        <textarea id="autServicios" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none text-sm bg-gray-50 resize-none" placeholder="Consulta con especialista, procedimientos..."></textarea>
+      </div>
+      <div id="autError" class="hidden p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
+      <button id="btnGuardarAutorizacion" onclick="guardarAutorizacion()"
+        class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition-colors text-sm">
+        Registrar Autorización
+      </button>
+    </div>
 
-  window.cancelarCita = async (id) => {
-    if (!confirm('¿Cancelar esta cita?')) return;
-    const res = await fetch(`${API}/citas/${id}/`, { method: 'PUT', headers, body: JSON.stringify({ estado: 'cancelada' }) });
-    if (res.ok) loadCitas();
-  };
+    <!-- Panel rechazar -->
+    <div id="panelModalRech" class="hidden p-5 space-y-3">
+      <div class="p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+        Al rechazar, el paciente será notificado y deberá reagendar con medicina general si considera necesario.
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Motivo del rechazo</label>
+        <textarea id="rechMotivo" rows="3" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-400 outline-none text-sm bg-gray-50 resize-none" placeholder="Servicio no cubierto por el PBS, documentación incompleta..."></textarea>
+      </div>
+      <div id="rechError" class="hidden p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
+      <button onclick="rechazarOrden()"
+        class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors text-sm">
+        Confirmar Rechazo
+      </button>
+    </div>
+  </div>
+</div>
 
-  document.getElementById('reprogramarForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('citaId').value;
-    const data = { fecha: document.getElementById('nuevaFecha').value, hora: document.getElementById('nuevaHora').value, estado: document.getElementById('nuevoEstado').value };
-    const res = await fetch(`${API}/citas/${id}/`, { method: 'PUT', headers, body: JSON.stringify(data) });
-    if (res.ok) { closeReprogramar(); loadCitas(); } else alert('Error al reprogramar');
-  };
+<!-- ══ MODAL REPROGRAMAR CITA ══════════════════════════ -->
+<div id="modalReprogramar" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+    <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="text-base font-bold text-gray-900">Editar Cita</h2>
+      <button onclick="closeReprogramar()" class="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="reprogramarForm" class="p-5 space-y-3">
+      <input type="hidden" id="citaId" />
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Fecha</label>
+          <input type="date" id="nuevaFecha" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none text-sm bg-gray-50" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Hora</label>
+          <input type="time" id="nuevaHora" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none text-sm bg-gray-50" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Estado</label>
+        <select id="nuevoEstado" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-900 outline-none text-sm bg-gray-50">
+          <option value="programada">Programada</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+          <option value="no_asistio">No Asistió</option>
+        </select>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button type="submit" class="flex-1 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors text-sm">Guardar</button>
+        <button type="button" onclick="closeReprogramar()" class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-  document.getElementById('searchInput').oninput = filterCitas;
-  document.getElementById('filterEstado').onchange = filterCitas;
+<!-- ══ MODAL DETALLE CITA ══════════════════════════════ -->
+<div id="modalDetalle" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+    <div class="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
+      <h2 class="text-base font-bold text-gray-900">Detalle de Cita</h2>
+      <button onclick="closeDetalle()" class="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="citaDetalle" class="p-5 space-y-3 overflow-y-auto"></div>
+  </div>
+</div>
 
-  function filterCitas() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    const estado = document.getElementById('filterEstado').value;
-    const filtered = todasCitas.filter(c => {
-      const matchTerm = (c.paciente?.first_name + ' ' + c.paciente?.last_name).toLowerCase().includes(term) || (c.medico?.first_name + ' ' + c.medico?.last_name).toLowerCase().includes(term);
-      const matchEstado = !estado || c.estado === estado;
-      return matchTerm && matchEstado;
-    });
-    renderCitas(filtered);
+<script>
+// @ts-nocheck
+const token = localStorage.getItem('token');
+if (!token || localStorage.getItem('rol') !== 'admin') {
+  window.location.href = '/admin/login';
+  throw new Error();
+}
+
+const API = 'http://localhost:8000/api';
+const H = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+let todasCitas = [];
+let todasOrdenes = [];
+let filtroOrden = 'pendiente_autorizacion';
+
+// ── Tabs ──────────────────────────────────────────────────
+window.showTab = (tab) => {
+  ['Citas','Ordenes','EPS'].forEach(t => {
+    const p = document.getElementById('panel' + t);
+    const b = document.getElementById('tab' + t);
+    if (p) p.classList.add('hidden');
+    if (b) {
+      b.className = 'tab-btn px-4 py-2 text-gray-500 rounded-lg text-sm font-medium transition-all hover:bg-white/70 flex items-center gap-1.5';
+    }
+  });
+  const key = tab.charAt(0).toUpperCase() + tab.slice(1);
+  document.getElementById('panel' + key)?.classList.remove('hidden');
+  const activeBtn = document.getElementById('tab' + key);
+  if (activeBtn) activeBtn.className = 'tab-btn px-4 py-2 bg-white text-gray-900 rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center gap-1.5';
+  if (tab === 'ordenes') loadOrdenes();
+  if (tab === 'eps') loadEPS();
+};
+
+// ── Stats ─────────────────────────────────────────────────
+function updateStats(citas, ordenes) {
+  document.getElementById('statTotal').textContent = citas.length;
+  document.getElementById('statProgramadas').textContent = citas.filter(c => c.estado === 'programada').length;
+  document.getElementById('statCompletadas').textContent = citas.filter(c => c.estado === 'completada').length;
+  document.getElementById('statEspecializadas').textContent = citas.filter(c => c.tipo_cita === 'especializada').length;
+  const pend = ordenes.filter(o => o.estado === 'pendiente_autorizacion').length;
+  document.getElementById('statOrdenesPend').textContent = pend;
+  const badge = document.getElementById('badgeOrdenes');
+  if (pend > 0) { badge.textContent = pend; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+}
+
+// ── Helpers ───────────────────────────────────────────────
+const TIPO_L = { general: 'Medicina General', especializada: 'Especialista', prioritaria: 'Prioritaria' };
+const TIPO_C = { general: 'bg-teal-50 text-teal-700', especializada: 'bg-slate-100 text-slate-700', prioritaria: 'bg-amber-50 text-amber-700' };
+const ESTADO_C = {
+  programada: 'bg-blue-50 text-blue-700',
+  completada: 'bg-emerald-50 text-emerald-700',
+  cancelada: 'bg-red-50 text-red-700',
+  no_asistio: 'bg-orange-50 text-orange-700',
+  pendiente_autorizacion: 'bg-amber-50 text-amber-700',
+};
+
+// ── Citas ─────────────────────────────────────────────────
+function renderCitas(citas) {
+  const tbody = document.getElementById('citasBody');
+  const table = document.getElementById('citasTable');
+  const loading = document.getElementById('loadingCitas');
+  loading.classList.add('hidden');
+  table.classList.remove('hidden');
+
+  if (!citas.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-400 text-sm">No hay citas con estos filtros</td></tr>';
+    return;
+  }
+  tbody.innerHTML = citas.map(c => `
+    <tr class="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
+      <td class="py-3 px-4">
+        <p class="text-sm font-semibold text-gray-900">${c.paciente?.first_name || ''} ${c.paciente?.last_name || ''}</p>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          ${c.paciente?.eps ? `<span class="text-xs text-teal-700 font-medium">${c.paciente.eps.nombre}</span>` : ''}
+          ${c.paciente?.regimen ? `<span class="text-xs text-gray-400 capitalize">· ${c.paciente.regimen}</span>` : ''}
+        </div>
+      </td>
+      <td class="py-3 px-4 text-sm text-gray-600">Dr. ${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</td>
+      <td class="py-3 px-4 text-sm text-gray-600 whitespace-nowrap">${c.fecha}<span class="text-gray-300 mx-1">·</span>${c.hora?.substring(0,5)}</td>
+      <td class="py-3 px-4"><span class="px-2 py-0.5 text-xs font-semibold rounded-full ${TIPO_C[c.tipo_cita] || ''}">${TIPO_L[c.tipo_cita] || c.tipo_cita}</span></td>
+      <td class="py-3 px-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${ESTADO_C[c.estado] || 'bg-gray-100 text-gray-600'}">${c.estado.replace('_',' ')}</span></td>
+      <td class="py-3 px-4 text-xs font-mono text-slate-500">${c.autorizacion?.numero_autorizacion || '—'}</td>
+      <td class="py-3 px-4">
+        <div class="flex items-center gap-1">
+          <button onclick="verDetalle(${c.id})" class="px-2.5 py-1.5 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Ver</button>
+          <button onclick="openReprogramar(${c.id}, '${c.fecha}', '${c.hora?.substring(0,5)}', '${c.estado}')" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Editar</button>
+          ${c.estado !== 'cancelada' ? `<button onclick="cancelarCita(${c.id})" class="px-2.5 py-1.5 text-xs font-semibold text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition-colors">Cancelar</button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadCitas() {
+  const res = await fetch(`${API}/citas/`, { headers: H });
+  if (res.ok) {
+    todasCitas = await res.json();
+    updateStats(todasCitas, todasOrdenes);
+    filterCitas();
+  }
+}
+
+function filterCitas() {
+  const term = document.getElementById('searchInput').value.toLowerCase();
+  const estado = document.getElementById('filterEstado').value;
+  const tipo = document.getElementById('filterTipoCita').value;
+  const regimen = document.getElementById('filterRegimen').value;
+  renderCitas(todasCitas.filter(c =>
+    (!term || (`${c.paciente?.first_name} ${c.paciente?.last_name} ${c.medico?.first_name} ${c.medico?.last_name}`).toLowerCase().includes(term)) &&
+    (!estado || c.estado === estado) &&
+    (!tipo || c.tipo_cita === tipo) &&
+    (!regimen || c.paciente?.regimen === regimen)
+  ));
+}
+
+['searchInput','filterEstado','filterTipoCita','filterRegimen'].forEach(id =>
+  document.getElementById(id).addEventListener('input', filterCitas));
+['filterEstado','filterTipoCita','filterRegimen'].forEach(id =>
+  document.getElementById(id).addEventListener('change', filterCitas));
+
+window.verDetalle = (id) => {
+  const c = todasCitas.find(c => c.id === id);
+  if (!c) return;
+  document.getElementById('citaDetalle').innerHTML = `
+    <div class="grid grid-cols-2 gap-3">
+      <div class="col-span-2 p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-3">
+        <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600">
+          ${(c.paciente?.first_name?.[0]||'') + (c.paciente?.last_name?.[0]||'')}
+        </div>
+        <div>
+          <p class="font-bold text-gray-900">${c.paciente?.first_name||''} ${c.paciente?.last_name||''}</p>
+          <p class="text-xs text-gray-500">${c.paciente?.eps?.nombre||''} ${c.paciente?.regimen ? '· '+c.paciente.regimen : ''} ${c.paciente?.numero_documento ? '· '+c.paciente.tipo_documento+' '+c.paciente.numero_documento : ''}</p>
+        </div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Médico</p>
+        <p class="text-sm font-semibold text-gray-900">Dr. ${c.medico?.first_name||''} ${c.medico?.last_name||''}</p>
+        <p class="text-xs text-gray-400">${c.medico?.especialidad?.nombre||''}</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Fecha · Hora</p>
+        <p class="text-sm font-semibold text-gray-900">${c.fecha}</p>
+        <p class="text-xs text-gray-400">${c.hora?.substring(0,5)}</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tipo</p>
+        <span class="text-xs font-bold px-2 py-0.5 rounded-full ${TIPO_C[c.tipo_cita]||''}">${TIPO_L[c.tipo_cita]||c.tipo_cita}</span>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Estado</p>
+        <span class="text-xs font-bold px-2 py-0.5 rounded-full ${ESTADO_C[c.estado]||''}">${c.estado.replace('_',' ')}</span>
+      </div>
+      ${c.autorizacion ? `
+      <div class="col-span-2 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1">Autorización EPS</p>
+        <p class="font-mono font-bold text-slate-800 text-sm">${c.autorizacion.numero_autorizacion}</p>
+        <p class="text-xs text-gray-500 mt-0.5">${c.autorizacion.eps?.nombre||''} · vence ${c.autorizacion.fecha_vigencia}</p>
+        ${c.autorizacion.servicios_autorizados ? `<p class="text-xs text-gray-400 mt-1">${c.autorizacion.servicios_autorizados}</p>` : ''}
+      </div>` : ''}
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Cuota Moderadora</p>
+        <p class="text-sm font-semibold text-gray-900">${c.exento_cuota ? '$0 (Exento)' : c.cuota_moderadora ? '$'+Number(c.cuota_moderadora).toLocaleString('es-CO') : '—'}</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Canal</p>
+        <p class="text-sm font-semibold text-gray-900 capitalize">${c.canal_solicitud||'—'}</p>
+      </div>
+    </div>
+    ${c.motivo ? `<div class="p-3 bg-gray-50 rounded-xl border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Motivo</p><p class="text-sm text-gray-700">${c.motivo}</p></div>` : ''}`;
+  document.getElementById('modalDetalle').classList.remove('hidden');
+  document.getElementById('modalDetalle').classList.add('flex');
+};
+window.closeDetalle = () => {
+  document.getElementById('modalDetalle').classList.add('hidden');
+  document.getElementById('modalDetalle').classList.remove('flex');
+};
+
+window.openReprogramar = (id, fecha, hora, estado) => {
+  document.getElementById('citaId').value = id;
+  document.getElementById('nuevaFecha').value = fecha;
+  document.getElementById('nuevaHora').value = hora;
+  document.getElementById('nuevoEstado').value = estado;
+  document.getElementById('modalReprogramar').classList.remove('hidden');
+  document.getElementById('modalReprogramar').classList.add('flex');
+};
+window.closeReprogramar = () => {
+  document.getElementById('modalReprogramar').classList.add('hidden');
+  document.getElementById('modalReprogramar').classList.remove('flex');
+};
+
+window.cancelarCita = async (id) => {
+  if (!confirm('¿Cancelar esta cita?')) return;
+  const res = await fetch(`${API}/citas/${id}/`, { method: 'PUT', headers: H, body: JSON.stringify({ estado: 'cancelada' }) });
+  if (res.ok) loadCitas();
+};
+
+document.getElementById('reprogramarForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('citaId').value;
+  const res = await fetch(`${API}/citas/${id}/`, {
+    method: 'PUT', headers: H,
+    body: JSON.stringify({
+      fecha: document.getElementById('nuevaFecha').value,
+      hora: document.getElementById('nuevaHora').value,
+      estado: document.getElementById('nuevoEstado').value,
+    }),
+  });
+  if (res.ok) { closeReprogramar(); loadCitas(); }
+  else alert('Error al guardar');
+};
+
+// ── Órdenes Médicas ───────────────────────────────────────
+window.filterOrdenes = (estado) => {
+  filtroOrden = estado;
+  // Update filter buttons
+  document.querySelectorAll('.fOrd-btn').forEach(b => {
+    b.className = 'fOrd-btn px-3 py-1.5 text-gray-500 rounded-lg text-xs font-medium transition-all hover:bg-white/60';
+  });
+  const map = { pendiente_autorizacion: 'fOrdPend', autorizada: 'fOrdAut', rechazada: 'fOrdRech', '': 'fOrdTodas' };
+  const activeId = map[estado];
+  if (activeId) {
+    const ab = document.getElementById(activeId);
+    ab.className = 'fOrd-btn px-3 py-1.5 bg-white rounded-lg text-xs font-semibold shadow-sm transition-all ' +
+      (estado === 'pendiente_autorizacion' ? 'text-amber-700' : estado === 'autorizada' ? 'text-emerald-700' : estado === 'rechazada' ? 'text-red-700' : 'text-gray-800');
+  }
+  renderOrdenes();
+};
+
+function renderOrdenes() {
+  const term = document.getElementById('searchOrdenes').value.toLowerCase();
+  let lista = todasOrdenes;
+  if (filtroOrden) lista = lista.filter(o => o.estado === filtroOrden);
+  if (term) lista = lista.filter(o =>
+    (`${o.paciente?.first_name} ${o.paciente?.last_name} ${o.especialidad_solicitada?.nombre}`).toLowerCase().includes(term));
+
+  const container = document.getElementById('ordenesList');
+  if (!lista.length) {
+    container.innerHTML = `<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400 text-sm">No hay órdenes en este estado.</div>`;
+    return;
   }
 
-  loadCitas();
+  const ORDEN_STATE = {
+    pendiente_autorizacion: { bg: 'border-l-4 border-l-amber-400 bg-amber-50/30', badge: 'bg-amber-100 text-amber-700', label: 'Pendiente de Autorización' },
+    autorizada:             { bg: 'border-l-4 border-l-emerald-400 bg-emerald-50/30', badge: 'bg-emerald-100 text-emerald-700', label: 'Autorizada' },
+    rechazada:              { bg: 'border-l-4 border-l-red-400 bg-red-50/20', badge: 'bg-red-100 text-red-700', label: 'Rechazada' },
+    vencida:                { bg: 'border-l-4 border-l-gray-300', badge: 'bg-gray-100 text-gray-500', label: 'Vencida' },
+  };
+
+  container.innerHTML = lista.map(o => {
+    const s = ORDEN_STATE[o.estado] || ORDEN_STATE.vencida;
+    const aut = o.autorizacion;
+    return `
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden ${s.bg}">
+        <div class="p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+              <span class="font-bold text-gray-900 text-sm">${o.paciente?.first_name||''} ${o.paciente?.last_name||''}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${s.badge}">${s.label}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
+              <span class="font-semibold text-teal-700">${o.especialidad_solicitada?.nombre||'Especialidad'}</span>
+              <span>Dr. ${o.medico_solicitante?.first_name||''} ${o.medico_solicitante?.last_name||''}</span>
+              <span>${o.paciente?.eps?.nombre||''}</span>
+              <span class="capitalize">${o.paciente?.regimen||''}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+              <span>Emitida: <span class="font-medium">${o.fecha_emision}</span></span>
+              <span>Vigencia: <span class="font-medium">${o.vigencia_dias} días</span></span>
+            </div>
+            ${o.observaciones ? `<p class="text-xs text-gray-400 mt-1.5 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 line-clamp-2">${o.observaciones}</p>` : ''}
+            ${aut ? `
+              <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+                <span class="font-bold text-gray-500">Aut:</span>
+                <span class="font-mono font-semibold text-slate-700">${aut.numero_autorizacion}</span>
+                <span class="text-gray-400">${aut.eps?.nombre||''}</span>
+                <span class="text-gray-400">vence ${aut.fecha_vigencia}</span>
+              </div>` : ''}
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            ${o.estado === 'pendiente_autorizacion' ? `
+              <button onclick="openAutorizacion(${o.id}, '${o.especialidad_solicitada?.nombre||''}', '${o.paciente?.first_name||''} ${o.paciente?.last_name||''}')"
+                class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm">
+                Autorizar / Rechazar
+              </button>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function loadOrdenes() {
+  const res = await fetch(`${API}/ordenes-medicas/`, { headers: H });
+  if (res.ok) {
+    todasOrdenes = await res.json();
+    updateStats(todasCitas, todasOrdenes);
+    renderOrdenes();
+  }
+}
+
+document.getElementById('searchOrdenes').addEventListener('input', renderOrdenes);
+
+// ── Modal Autorizar / Rechazar ─────────────────────────────
+let epsList = [];
+
+async function loadEPSForSelect() {
+  if (epsList.length) return; // cached
+  const res = await fetch(`${API}/eps/?activas=false`, { headers: H });
+  if (res.ok) {
+    epsList = await res.json();
+    const sel = document.getElementById('autEpsId');
+    sel.innerHTML = '<option value="">Seleccionar EPS...</option>';
+    epsList.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.id; opt.textContent = e.nombre;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+window.openAutorizacion = async (ordenId, especialidad, paciente) => {
+  await loadEPSForSelect();
+  document.getElementById('autOrdenId').value = ordenId;
+  document.getElementById('autOrdenInfo').textContent = `${especialidad} · ${paciente}`;
+  document.getElementById('autFecha').value = new Date().toISOString().split('T')[0];
+  const v = new Date(); v.setDate(v.getDate() + 30);
+  document.getElementById('autVigencia').value = v.toISOString().split('T')[0];
+  document.getElementById('autNumero').value = '';
+  document.getElementById('autServicios').value = '';
+  document.getElementById('rechMotivo').value = '';
+  document.getElementById('autError').classList.add('hidden');
+  document.getElementById('rechError').classList.add('hidden');
+  switchModalTab('autorizar');
+  document.getElementById('modalAutorizacion').classList.remove('hidden');
+  document.getElementById('modalAutorizacion').classList.add('flex');
+};
+
+window.closeAutorizacion = () => {
+  document.getElementById('modalAutorizacion').classList.add('hidden');
+  document.getElementById('modalAutorizacion').classList.remove('flex');
+};
+
+window.switchModalTab = (tab) => {
+  const isAut = tab === 'autorizar';
+  document.getElementById('panelModalAut').classList.toggle('hidden', !isAut);
+  document.getElementById('panelModalRech').classList.toggle('hidden', isAut);
+  document.getElementById('modTabAut').className = isAut
+    ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-500 bg-teal-50/50 transition-all'
+    : 'flex-1 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:bg-gray-50 transition-all';
+  document.getElementById('modTabRech').className = !isAut
+    ? 'flex-1 py-3 text-sm font-semibold text-red-700 border-b-2 border-red-500 bg-red-50/50 transition-all'
+    : 'flex-1 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:bg-gray-50 transition-all';
+};
+
+window.guardarAutorizacion = async () => {
+  const btn = document.getElementById('btnGuardarAutorizacion');
+  const errDiv = document.getElementById('autError');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+
+  const res = await fetch(`${API}/ordenes-medicas/${document.getElementById('autOrdenId').value}/autorizar/`, {
+    method: 'POST', headers: H,
+    body: JSON.stringify({
+      eps_id: Number(document.getElementById('autEpsId').value),
+      numero_autorizacion: document.getElementById('autNumero').value,
+      fecha_autorizacion: document.getElementById('autFecha').value,
+      fecha_vigencia: document.getElementById('autVigencia').value,
+      servicios_autorizados: document.getElementById('autServicios').value,
+    }),
+  });
+
+  if (res.ok) { closeAutorizacion(); loadOrdenes(); }
+  else {
+    const d = await res.json();
+    errDiv.textContent = d.error || JSON.stringify(d);
+    errDiv.classList.remove('hidden');
+  }
+  btn.textContent = 'Registrar Autorización'; btn.disabled = false;
+};
+
+window.rechazarOrden = async () => {
+  const motivo = document.getElementById('rechMotivo').value.trim();
+  const errDiv = document.getElementById('rechError');
+  if (!motivo) { errDiv.textContent = 'Indique el motivo del rechazo.'; errDiv.classList.remove('hidden'); return; }
+
+  const ordenId = document.getElementById('autOrdenId').value;
+  const res = await fetch(`${API}/ordenes-medicas/${ordenId}/`, {
+    method: 'PUT', headers: H,
+    body: JSON.stringify({ estado: 'rechazada', observaciones: motivo }),
+  });
+
+  if (res.ok) { closeAutorizacion(); loadOrdenes(); }
+  else { errDiv.textContent = 'Error al rechazar la orden.'; errDiv.classList.remove('hidden'); }
+};
+
+// ── EPS ───────────────────────────────────────────────────
+async function loadEPS() {
+  const res = await fetch(`${API}/eps/?activas=false`, { headers: H });
+  const lista = await res.json();
+  const container = document.getElementById('epsList');
+  if (!lista.length) {
+    container.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">Sin EPS registradas.</div>';
+    return;
+  }
+  container.innerHTML = lista.map(e => `
+    <div class="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0">
+      <div>
+        <p class="font-semibold text-gray-900 text-sm">${e.nombre}</p>
+        <p class="text-xs font-mono text-gray-400">RNOS: ${e.codigo_rnos}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${e.activa ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}">${e.activa ? 'Activa' : 'Inactiva'}</span>
+        <button onclick="toggleEPS(${e.id}, ${!e.activa})" class="text-xs font-medium text-gray-500 hover:text-gray-800 px-2.5 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          ${e.activa ? 'Desactivar' : 'Activar'}
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+window.guardarEPS = async () => {
+  const errDiv = document.getElementById('epsError');
+  const nombre = document.getElementById('epsNombre').value.trim();
+  const codigo = document.getElementById('epsCodigo').value.trim();
+  if (!nombre || !codigo) { errDiv.textContent = 'Complete todos los campos.'; errDiv.classList.remove('hidden'); return; }
+  const res = await fetch(`${API}/eps/`, { method: 'POST', headers: H, body: JSON.stringify({ nombre, codigo_rnos: codigo, activa: true }) });
+  if (res.ok) {
+    document.getElementById('epsNombre').value = '';
+    document.getElementById('epsCodigo').value = '';
+    errDiv.classList.add('hidden');
+    epsList = []; // invalidate cache
+    loadEPS();
+  } else {
+    const d = await res.json();
+    errDiv.textContent = d.codigo_rnos?.[0] || d.nombre?.[0] || 'Error al guardar.';
+    errDiv.classList.remove('hidden');
+  }
+};
+
+window.toggleEPS = async (id, activa) => {
+  await fetch(`${API}/eps/${id}/`, { method: 'PUT', headers: H, body: JSON.stringify({ activa }) });
+  epsList = []; loadEPS();
+};
+
+// ── Init ──────────────────────────────────────────────────
+Promise.all([
+  fetch(`${API}/citas/`, { headers: H }).then(r => r.json()),
+  fetch(`${API}/ordenes-medicas/`, { headers: H }).then(r => r.json()),
+]).then(([citas, ordenes]) => {
+  todasCitas = citas;
+  todasOrdenes = ordenes;
+  updateStats(citas, ordenes);
+  filterCitas();
+}).catch(console.error);
 </script>

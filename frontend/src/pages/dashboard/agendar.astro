@@ -3,383 +3,463 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 ---
 
 <DashboardLayout title="Agendar Consulta">
-  <div class="max-w-4xl mx-auto space-y-8">
-    <div>
-      <h1 class="text-3xl font-semibold tracking-tight text-gray-900">Agendar Consulta</h1>
-      <p class="text-gray-500 font-medium mt-1">Siga los pasos para programar su atención médica</p>
+  <!-- Éxito (oculto) -->
+  <div id="sectionExito" class="hidden max-w-md mx-auto mt-16 bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+    <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h2 class="text-xl font-bold text-gray-900 mb-1">¡Cita Agendada!</h2>
+    <p class="text-gray-500 text-sm mb-6">Su cita ha sido registrada. Si el médico le indica un especialista, lo verá en <strong>Mis Órdenes</strong>.</p>
+    <div class="flex flex-col gap-2">
+      <a href="/dashboard" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors text-sm">Ir al panel</a>
+      <a href="/dashboard/ordenes" class="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm">Mis Órdenes</a>
+    </div>
+  </div>
+
+  <!-- Formulario principal -->
+  <div id="formContainer" class="max-w-5xl mx-auto">
+    <div class="mb-5">
+      <h1 class="text-xl font-bold tracking-tight text-gray-900">Agendar Consulta</h1>
+      <p class="text-gray-400 text-sm mt-0.5">Para especialista, su médico general emitirá una orden → <a href="/dashboard/ordenes" class="text-teal-600 font-semibold hover:underline">Mis Órdenes</a></p>
     </div>
 
-    <!-- Stepper (Pasos) -->
-    <div class="flex items-center gap-2 mb-8 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
-      <div id="step1Indicator" class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold whitespace-nowrap transition-all shadow-sm">
-        <span class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center text-xs">1</span>
-        Especialidad
-      </div>
-      <div class="w-8 h-px bg-gray-200 shrink-0"></div>
-      <div id="step2Indicator" class="flex items-center gap-2 px-5 py-2.5 text-gray-400 text-sm font-medium whitespace-nowrap transition-all">
-        <span class="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs">2</span>
-        Médico
-      </div>
-      <div class="w-8 h-px bg-gray-200 shrink-0"></div>
-      <div id="step3Indicator" class="flex items-center gap-2 px-5 py-2.5 text-gray-400 text-sm font-medium whitespace-nowrap transition-all">
-        <span class="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs">3</span>
-        Fecha
-      </div>
-      <div class="w-8 h-px bg-gray-200 shrink-0"></div>
-      <div id="step4Indicator" class="flex items-center gap-2 px-5 py-2.5 text-gray-400 text-sm font-medium whitespace-nowrap transition-all">
-        <span class="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs">4</span>
-        Confirmar
-      </div>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-5 items-start">
 
-    <div class="relative bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
-      
-      <!-- Paso 1 -->
-      <div id="step1" class="absolute inset-0 p-8 sm:p-10 transition-opacity duration-300 overflow-y-auto">
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold text-gray-900 tracking-tight">Seleccione la Especialidad</h2>
-          <p class="text-gray-500 mt-1">Elija el área clínica que necesita consultar.</p>
-        </div>
-        <div id="especialidadesList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="col-span-full flex justify-center py-12 text-gray-400">
-            <svg class="animate-spin h-8 w-8 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      <!-- LEFT: Selecciones -->
+      <div class="lg:col-span-3 space-y-4">
+
+        <!-- Tipo de atención -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tipo de atención</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btnGeneral" onclick="selectTipo('general')"
+              class="p-3 rounded-xl border-2 border-teal-500 bg-teal-50 text-left transition-all flex items-center gap-3">
+              <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 text-sm leading-tight">Medicina General</p>
+                <p class="text-xs text-gray-400 mt-0.5">Puerta de entrada</p>
+              </div>
+            </button>
+            <button id="btnPrioritaria" onclick="selectTipo('prioritaria')"
+              class="p-3 rounded-xl border-2 border-gray-100 bg-white text-left transition-all flex items-center gap-3 hover:border-amber-300">
+              <div class="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 text-sm leading-tight">Prioritaria</p>
+                <p class="text-xs text-gray-400 mt-0.5">Sin orden previa</p>
+              </div>
+            </button>
           </div>
-        </div>
-      </div>
 
-      <!-- Paso 2 -->
-      <div id="step2" class="hidden absolute inset-0 p-8 sm:p-10 transition-opacity duration-300 bg-white z-10 overflow-y-auto">
-        <button id="btnVolver2" class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-6">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-          Volver a especialidades
-        </button>
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold text-gray-900 tracking-tight">Seleccione al Profesional</h2>
-          <p class="text-gray-500 mt-1">Médicos disponibles para la especialidad seleccionada.</p>
-        </div>
-        <div id="medicosList" class="space-y-3"></div>
-      </div>
-
-      <!-- Paso 3 -->
-      <div id="step3" class="hidden absolute inset-0 p-8 sm:p-10 transition-opacity duration-300 bg-white z-20 overflow-y-auto">
-        <button id="btnVolver3" class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-6">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-          Volver a médicos
-        </button>
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold text-gray-900 tracking-tight">Fecha y Horario</h2>
-          <p class="text-gray-500 mt-1">Seleccione el momento ideal para su consulta.</p>
-        </div>
-        
-        <div class="space-y-8">
-          <div>
-            <label class="block text-sm font-semibold text-gray-900 mb-2">Fecha de Consulta</label>
-            <div class="relative">
-              <input type="date" id="fecha" class="w-full pl-4 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all font-medium text-gray-700 outline-none" />
+          <!-- Régimen -->
+          <div class="mt-3 pt-3 border-t border-gray-100">
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Régimen de afiliación</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnContributivo" onclick="selectRegimen('contributivo')"
+                class="regimen-btn px-3 py-2.5 rounded-xl border-2 border-slate-900 bg-slate-900 text-white text-sm font-semibold transition-all flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Contributivo
+              </button>
+              <button id="btnSubsidiado" onclick="selectRegimen('subsidiado')"
+                class="regimen-btn px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-white text-gray-600 text-sm font-semibold transition-all flex items-center gap-2 hover:border-gray-300">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Subsidiado
+              </button>
             </div>
           </div>
-          
-          <div id="horasDisponibles" class="hidden">
-            <label class="block text-sm font-semibold text-gray-900 mb-3">Horarios Disponibles</label>
-            <div id="horasList" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+
+          <!-- Especialidad (solo prioritaria) -->
+          <div id="sectionEspecialidad" class="hidden mt-3 pt-3 border-t border-gray-100">
+            <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Especialidad</label>
+            <select id="especialidadSelect" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-gray-700 text-sm font-medium">
+              <option value="">Seleccionar especialidad...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Médicos -->
+        <div id="sectionMedicos" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Médico</p>
+            <span id="especialidadLabel" class="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">Medicina General</span>
+          </div>
+          <div id="medicosList" class="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+            <div class="flex justify-center py-6">
+              <svg class="animate-spin h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fecha y Hora -->
+        <div id="sectionFecha" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Fecha</label>
+              <input type="date" id="fechaInput"
+                class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-sm font-medium text-gray-700" />
+              <p class="text-[10px] text-gray-400 mt-1">Máx. 3 días hábiles · Res. 1552/2013</p>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Motivo <span class="font-normal normal-case">(opcional)</span></label>
+              <textarea id="motivoInput" rows="3"
+                class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-gray-700 resize-none text-sm"
+                placeholder="Síntomas..."></textarea>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-semibold text-gray-900 mb-2">Motivo de la consulta <span class="text-gray-400 font-normal">(Opcional)</span></label>
-            <textarea id="motivo" rows="3" placeholder="Describa brevemente sus síntomas o motivo..." class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all text-gray-700 outline-none resize-none"></textarea>
+          <div id="horasSection" class="hidden">
+            <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Horarios disponibles</label>
+            <div id="horasList" class="grid grid-cols-5 sm:grid-cols-7 gap-1.5"></div>
           </div>
+        </div>
 
-          <div class="pt-4 border-t border-gray-100">
-            <button id="btnConfirmar" disabled class="w-full sm:w-auto px-8 py-3.5 bg-gray-200 text-gray-500 font-semibold rounded-xl cursor-not-allowed transition-colors ml-auto block">
-              Seleccione fecha y hora
+      </div>
+
+      <!-- RIGHT: Panel de confirmación sticky -->
+      <div class="lg:col-span-2 lg:sticky lg:top-6">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/60">
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Resumen</p>
+          </div>
+          <div class="p-4 space-y-3">
+
+            <!-- Médico seleccionado -->
+            <div id="resumenMedicoBox" class="hidden p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
+              <div id="resumenAvatar" class="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center text-slate-700 font-bold text-sm shrink-0"></div>
+              <div>
+                <p class="text-xs text-gray-400 font-medium">Médico</p>
+                <p class="font-semibold text-gray-900 text-sm" id="resumenMedico"></p>
+              </div>
+            </div>
+
+            <!-- Tipo + Régimen -->
+            <div id="resumenTipoBox" class="hidden grid grid-cols-2 gap-2">
+              <div class="flex flex-col px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Tipo</p>
+                <span id="resumenTipo" class="text-xs font-bold text-gray-800"></span>
+              </div>
+              <div class="flex flex-col px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Régimen</p>
+                <span id="resumenRegimen" class="text-xs font-bold text-gray-800 capitalize"></span>
+              </div>
+            </div>
+
+            <!-- Fecha y hora -->
+            <div id="resumenFechaBox" class="hidden grid grid-cols-2 gap-2">
+              <div class="p-3 bg-teal-50 rounded-xl border border-teal-100">
+                <p class="text-[10px] font-bold text-teal-500 uppercase tracking-wider mb-0.5">Fecha</p>
+                <p class="font-semibold text-teal-800 text-xs" id="resumenFecha"></p>
+              </div>
+              <div class="p-3 bg-teal-50 rounded-xl border border-teal-100">
+                <p class="text-[10px] font-bold text-teal-500 uppercase tracking-wider mb-0.5">Hora</p>
+                <p class="font-semibold text-teal-800 text-sm" id="resumenHora"></p>
+              </div>
+            </div>
+
+            <!-- Cuota -->
+            <div id="resumenCuotaBox" class="hidden flex items-center justify-between px-3 py-2 bg-amber-50 rounded-xl border border-amber-100">
+              <p class="text-xs text-amber-700 font-medium">Cuota est.</p>
+              <p class="text-xs font-bold text-amber-800" id="resumenCuota"></p>
+            </div>
+
+            <!-- Placeholder vacío -->
+            <div id="resumenPlaceholder" class="py-8 text-center text-gray-300">
+              <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <p class="text-xs">Seleccione médico, fecha y hora</p>
+            </div>
+
+            <div id="citaError" class="hidden p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
+
+            <button id="btnConfirmar" disabled
+              class="w-full py-3 bg-gray-200 text-gray-400 font-semibold rounded-xl cursor-not-allowed transition-all text-sm">
+              Confirmar Cita
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Paso 4 -->
-      <div id="step4" class="hidden absolute inset-0 p-8 sm:p-10 transition-opacity duration-300 bg-white z-30 overflow-y-auto">
-        <button id="btnVolver4" class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-6">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-          Volver a fecha
-        </button>
-        <div class="mb-8">
-          <h2 class="text-2xl font-semibold text-gray-900 tracking-tight">Confirmar Cita</h2>
-          <p class="text-gray-500 mt-1">Verifique los datos antes de finalizar.</p>
-        </div>
-        
-        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 sm:p-8 mb-8">
-          <div class="grid sm:grid-cols-2 gap-6">
-            <div>
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Especialidad</p>
-              <p class="text-lg font-semibold text-gray-900" id="confEspecialidad"></p>
-            </div>
-            <div>
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Médico Tratante</p>
-              <p class="text-lg font-semibold text-gray-900" id="confMedico"></p>
-            </div>
-            <div class="col-span-full h-px bg-gray-200 my-2"></div>
-            <div>
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Fecha</p>
-              <p class="text-lg font-semibold text-teal-700" id="confFecha"></p>
-            </div>
-            <div>
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Hora</p>
-              <p class="text-lg font-semibold text-teal-700" id="confHora"></p>
-            </div>
-            <div class="col-span-full">
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Motivo</p>
-              <p class="text-sm font-medium text-gray-700 bg-white p-3 rounded-lg border border-gray-100" id="confMotivo"></p>
-            </div>
-          </div>
-        </div>
-
-        <button id="btnCrearCita" class="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors shadow-sm text-lg">
-          Confirmar Agendamiento
-        </button>
-      </div>
-
-      <!-- Éxito -->
-      <div id="success" class="hidden absolute inset-0 p-8 sm:p-10 transition-opacity duration-300 bg-white z-40 flex flex-col items-center justify-center text-center">
-        <div class="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6">
-          <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-        </div>
-        <h2 class="text-3xl font-bold text-gray-900 tracking-tight mb-2">Cita Confirmada</h2>
-        <p class="text-gray-500 mb-10 max-w-sm">Su cita ha sido agendada exitosamente en nuestro sistema.</p>
-        <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-          <a href="/dashboard" class="px-8 py-3.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm">Ir a mi Panel</a>
-          <button id="btnNuevaCita" class="px-8 py-3.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">Nueva Cita</button>
-        </div>
-      </div>
-      
     </div>
   </div>
 </DashboardLayout>
 
 <script>
-  // @ts-nocheck
-  const token = localStorage.getItem('token');
-  const rol = localStorage.getItem('rol');
-  
-  if (!token || rol !== 'paciente') {
-    window.location.replace('/auth/login');
-    throw new Error('No autorizado');
+// @ts-nocheck
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('token');
+if (!token || localStorage.getItem('rol') !== 'paciente') {
+  window.location.replace('/auth/login');
+  throw new Error();
+}
+
+let tipoCita = 'general';
+let selectedMedico = null;
+let selectedFecha = null;
+let selectedHora = null;
+let userRegimen = null;
+
+fetch(`${API}/usuarios/`, { headers: { Authorization: `Bearer ${token}` } })
+  .then(r => r.json()).then(d => {
+    if (d.regimen) selectRegimen(d.regimen);
+  }).catch(() => {});
+
+// ── Régimen ───────────────────────────────────────
+window.selectRegimen = (regimen) => {
+  userRegimen = regimen;
+  const isC = regimen === 'contributivo';
+  document.getElementById('btnContributivo').className = isC
+    ? 'regimen-btn px-3 py-2.5 rounded-xl border-2 border-slate-900 bg-slate-900 text-white text-sm font-semibold transition-all flex items-center gap-2'
+    : 'regimen-btn px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-white text-gray-600 text-sm font-semibold transition-all flex items-center gap-2 hover:border-gray-300';
+  document.getElementById('btnSubsidiado').className = !isC
+    ? 'regimen-btn px-3 py-2.5 rounded-xl border-2 border-slate-900 bg-slate-900 text-white text-sm font-semibold transition-all flex items-center gap-2'
+    : 'regimen-btn px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-white text-gray-600 text-sm font-semibold transition-all flex items-center gap-2 hover:border-gray-300';
+  // Update resumen if already showing
+  if (!document.getElementById('resumenTipoBox').classList.contains('hidden')) {
+    updateResumenTipo();
+  }
+  updateCuota();
+};
+
+// ── Tipo ──────────────────────────────────────────
+window.selectTipo = (tipo) => {
+  tipoCita = tipo;
+  const isGen = tipo === 'general';
+  document.getElementById('btnGeneral').className = isGen
+    ? 'p-3 rounded-xl border-2 border-teal-500 bg-teal-50 text-left transition-all flex items-center gap-3'
+    : 'p-3 rounded-xl border-2 border-gray-100 bg-white text-left transition-all flex items-center gap-3 hover:border-teal-300';
+  document.getElementById('btnPrioritaria').className = !isGen
+    ? 'p-3 rounded-xl border-2 border-amber-400 bg-amber-50 text-left transition-all flex items-center gap-3'
+    : 'p-3 rounded-xl border-2 border-gray-100 bg-white text-left transition-all flex items-center gap-3 hover:border-amber-300';
+
+  document.getElementById('sectionEspecialidad').classList.toggle('hidden', isGen);
+  updateResumenTipo();
+
+  if (isGen) {
+    loadMedicos(null);
+  } else {
+    loadEspecialidades();
+    // clear medicos until specialty chosen
+    document.getElementById('medicosList').innerHTML = '<p class="text-xs text-gray-400 py-4 text-center">Seleccione una especialidad primero</p>';
+  }
+};
+
+// ── Especialidades (prioritaria) ──────────────────
+async function loadEspecialidades() {
+  const res = await fetch(`${API}/especialidades/`);
+  const lista = await res.json();
+  const sel = document.getElementById('especialidadSelect');
+  sel.innerHTML = '<option value="">Seleccionar especialidad...</option>';
+  lista.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.id; opt.textContent = e.nombre;
+    sel.appendChild(opt);
+  });
+  sel.onchange = () => {
+    if (sel.value) loadMedicos(sel.value);
+  };
+}
+
+// ── Médicos ──────────────────────────────────────
+async function loadMedicos(especialidadId) {
+  const url = especialidadId ? `${API}/medicos/?especialidad=${especialidadId}` : `${API}/medicos/`;
+  const res = await fetch(url);
+  let medicos = await res.json();
+
+  if (!especialidadId) {
+    const gen = medicos.filter(m =>
+      m.especialidad?.nombre?.toLowerCase().includes('general') ||
+      m.especialidad?.nombre?.toLowerCase().includes('medicina')
+    );
+    medicos = gen.length ? gen : medicos;
+    document.getElementById('especialidadLabel').textContent = 'Medicina General';
+  } else {
+    document.getElementById('especialidadLabel').textContent = medicos[0]?.especialidad?.nombre || '';
   }
 
-  let selectedEspecialidad = null;
-  let selectedMedico = null;
-  let selectedFecha = null;
-  let selectedHora = null;
+  selectedMedico = null;
+  resetFechaHoras();
+  const c = document.getElementById('medicosList');
 
-  async function loadEspecialidades() {
-    const res = await fetch('http://localhost:8000/api/especialidades/');
-    const especialidades = await res.json();
-    
-    const container = document.getElementById('especialidadesList');
-    container.innerHTML = '';
-    
-    especialidades.forEach(e => {
-      const btn = document.createElement('button');
-      btn.className = 'group p-6 bg-white border border-gray-100 rounded-2xl hover:border-teal-600 hover:shadow-md transition-all text-left flex items-center justify-between';
-      btn.innerHTML = `
-        <div>
-          <div class="font-semibold text-lg text-gray-900 group-hover:text-teal-700 transition-colors">${e.nombre}</div>
-          <p class="text-sm text-gray-500 mt-1">Ver profesionales</p>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-teal-50 flex items-center justify-center text-gray-400 group-hover:text-teal-600 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        </div>
-      `;
-      btn.onclick = () => selectEspecialidad(e.id, e.nombre);
-      container.appendChild(btn);
-    });
+  if (!medicos.length) {
+    c.innerHTML = `<p class="text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-100 text-center">Sin médicos disponibles</p>`;
+    return;
   }
 
-  function selectEspecialidad(id, nombre) {
-    selectedEspecialidad = { id, nombre };
-    loadMedicos(id);
-    goStep(2);
-  }
+  c.innerHTML = '';
+  medicos.forEach(m => {
+    const btn = document.createElement('button');
+    const initials = (m.first_name[0]||'').toUpperCase() + (m.last_name[0]||'').toUpperCase();
+    btn.className = 'medico-btn w-full px-3 py-2.5 bg-white border border-gray-100 rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-all text-left flex items-center gap-3';
+    btn.innerHTML = `
+      <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-xs shrink-0">${initials}</div>
+      <div class="min-w-0">
+        <p class="font-semibold text-gray-900 text-sm truncate">Dr. ${m.first_name} ${m.last_name}</p>
+        <p class="text-xs text-gray-400 truncate">${m.especialidad?.nombre || 'Médico General'}</p>
+      </div>
+      <svg class="w-3.5 h-3.5 text-gray-300 ml-auto shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`;
+    btn.dataset.initials = initials;
+    btn.onclick = () => selectMedico(m.id, `Dr. ${m.first_name} ${m.last_name}`, initials, btn);
+    c.appendChild(btn);
+  });
+}
 
-  async function loadMedicos(especialidadId) {
-    const res = await fetch(`http://localhost:8000/api/medicos/?especialidad=${especialidadId}`);
-    const medicos = await res.json();
-    
-    const container = document.getElementById('medicosList');
-    container.innerHTML = '';
-    
-    if (medicos.length === 0) {
-      container.innerHTML = `
-        <div class="bg-amber-50 text-amber-700 p-4 rounded-xl border border-amber-100 flex items-center gap-3">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span class="font-medium">No hay médicos disponibles para esta especialidad.</span>
-        </div>
-      `;
-      return;
-    }
-    
-    medicos.forEach(m => {
-      const btn = document.createElement('button');
-      btn.className = 'w-full p-5 bg-white border border-gray-100 rounded-2xl hover:border-slate-400 hover:shadow-sm transition-all text-left flex items-center gap-4';
-      btn.innerHTML = `
-        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-lg shrink-0">
-          ${m.first_name.charAt(0)}${m.last_name.charAt(0)}
-        </div>
-        <div>
-          <div class="font-semibold text-gray-900 text-lg">Dr. ${m.first_name} ${m.last_name}</div>
-          <div class="text-sm text-gray-500 font-medium">${selectedEspecialidad.nombre}</div>
-        </div>
-      `;
-      btn.onclick = () => selectMedico(m.id, `Dr. ${m.first_name} ${m.last_name}`);
-      container.appendChild(btn);
-    });
-  }
+function selectMedico(id, nombre, initials, btn) {
+  selectedMedico = { id, nombre, initials };
+  document.querySelectorAll('.medico-btn').forEach(b => {
+    b.className = 'medico-btn w-full px-3 py-2.5 bg-white border border-gray-100 rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-all text-left flex items-center gap-3';
+    b.querySelector('div').className = 'w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-xs shrink-0';
+    b.querySelectorAll('p')[0].className = 'font-semibold text-gray-900 text-sm truncate';
+    b.querySelectorAll('p')[1].className = 'text-xs text-gray-400 truncate';
+    b.querySelector('svg').setAttribute('class', 'w-3.5 h-3.5 text-gray-300 ml-auto shrink-0');
+  });
+  btn.className = 'medico-btn w-full px-3 py-2.5 bg-slate-900 border border-slate-900 rounded-xl transition-all text-left flex items-center gap-3';
+  btn.querySelector('div').className = 'w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0';
+  btn.querySelectorAll('p')[0].className = 'font-semibold text-white text-sm truncate';
+  btn.querySelectorAll('p')[1].className = 'text-xs text-slate-400 truncate';
+  btn.querySelector('svg').setAttribute('class', 'w-3.5 h-3.5 text-slate-500 ml-auto shrink-0');
 
-  function selectMedico(id, nombre) {
-    selectedMedico = { id, nombre };
-    goStep(3);
-    
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('fecha').min = tomorrow.toISOString().split('T')[0];
-  }
+  const tm = new Date(); tm.setDate(tm.getDate() + 1);
+  document.getElementById('fechaInput').min = tm.toISOString().split('T')[0];
+  document.getElementById('fechaInput').value = '';
+  document.getElementById('sectionFecha').classList.remove('hidden');
+  resetFechaHoras();
+  updateResumenMedico();
+}
 
-  document.getElementById('fecha').addEventListener('change', async (e) => {
-    selectedFecha = e.target.value;
-    selectedHora = null;
-    
-    if (!selectedMedico || !selectedFecha) return;
-    
-    const res = await fetch(`http://localhost:8000/api/disponibilidad/?medico_id=${selectedMedico.id}&fecha=${selectedFecha}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    const data = await res.json();
-    const horas = data.horarios_disponibles || [];
-    
-    const container = document.getElementById('horasDisponibles');
-    const list = document.getElementById('horasList');
-    list.innerHTML = '';
-    
-    if (horas.length === 0) {
-      container.classList.remove('hidden');
-      list.innerHTML = `
-        <div class="col-span-full bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 flex items-center gap-3">
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span class="font-medium">No hay horarios disponibles para la fecha seleccionada.</span>
-        </div>
-      `;
-      return;
-    }
-    
-    container.classList.remove('hidden');
-    horas.forEach(h => {
-      const btn = document.createElement('button');
-      btn.className = 'py-3 px-2 border border-gray-200 bg-white rounded-xl hover:border-slate-400 transition-colors text-center font-semibold text-gray-700';
-      btn.textContent = h;
-      btn.onclick = (e) => selectHora(h, e);
-      list.appendChild(btn);
-    });
+// ── Fecha y Hora ──────────────────────────────────
+function resetFechaHoras() {
+  selectedFecha = null; selectedHora = null;
+  document.getElementById('horasSection').classList.add('hidden');
+  document.getElementById('horasList').innerHTML = '';
+  hideResumenFecha(); disableConfirm();
+}
+
+document.getElementById('fechaInput').addEventListener('change', async (e) => {
+  selectedFecha = e.target.value;
+  selectedHora = null;
+  hideResumenFecha(); disableConfirm();
+  if (!selectedMedico || !selectedFecha) return;
+
+  document.getElementById('horasSection').classList.remove('hidden');
+  document.getElementById('horasList').innerHTML = `
+    <div class="col-span-full flex justify-center py-3">
+      <svg class="animate-spin h-4 w-4 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+    </div>`;
+
+  const res = await fetch(`${API}/disponibilidad/?medico_id=${selectedMedico.id}&fecha=${selectedFecha}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  const list = document.getElementById('horasList');
+  list.innerHTML = '';
+
+  if (data.error || !data.horarios_disponibles?.length) {
+    list.innerHTML = `<div class="col-span-full p-2.5 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100">${data.error || 'Sin horarios para esta fecha.'}</div>`;
+    return;
+  }
+  data.horarios_disponibles.forEach(h => {
+    const btn = document.createElement('button');
+    btn.className = 'hora-btn py-2 text-xs border border-gray-200 bg-white rounded-lg hover:border-slate-400 font-semibold text-gray-700 transition-all';
+    btn.textContent = h;
+    btn.onclick = (ev) => selectHora(h, ev.currentTarget);
+    list.appendChild(btn);
+  });
+});
+
+function selectHora(hora, btn) {
+  selectedHora = hora;
+  document.querySelectorAll('.hora-btn').forEach(b =>
+    b.className = 'hora-btn py-2 text-xs border border-gray-200 bg-white rounded-lg hover:border-slate-400 font-semibold text-gray-700 transition-all');
+  btn.className = 'hora-btn py-2 text-xs border-2 border-slate-900 bg-slate-900 text-white rounded-lg font-semibold transition-all';
+  updateResumenFecha();
+  enableConfirm();
+}
+
+// ── Resumen panel ─────────────────────────────────
+function updateResumenMedico() {
+  if (!selectedMedico) return;
+  document.getElementById('resumenAvatar').textContent = selectedMedico.initials;
+  document.getElementById('resumenMedico').textContent = selectedMedico.nombre;
+  document.getElementById('resumenMedicoBox').classList.remove('hidden');
+  document.getElementById('resumenPlaceholder').classList.add('hidden');
+  updateResumenTipo();
+}
+
+function updateResumenTipo() {
+  const TIPO_L = { general: 'Medicina General', prioritaria: 'Prioritaria' };
+  document.getElementById('resumenTipo').textContent = TIPO_L[tipoCita] || tipoCita;
+  document.getElementById('resumenRegimen').textContent = userRegimen || '—';
+  document.getElementById('resumenTipoBox').classList.remove('hidden');
+}
+
+function updateResumenFecha() {
+  const d = new Date(selectedFecha + 'T00:00:00');
+  document.getElementById('resumenFecha').textContent = d.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('resumenHora').textContent = selectedHora;
+  document.getElementById('resumenFechaBox').classList.remove('hidden');
+  updateCuota();
+}
+
+function hideResumenFecha() {
+  document.getElementById('resumenFechaBox').classList.add('hidden');
+  document.getElementById('resumenCuotaBox').classList.add('hidden');
+}
+
+function updateCuota() {
+  if (!selectedHora) return;
+  const cuota = userRegimen === 'subsidiado' ? '$0 (Subsidiado)' : '$5.000 – $20.100 (Contributivo)';
+  document.getElementById('resumenCuota').textContent = cuota;
+  document.getElementById('resumenCuotaBox').classList.remove('hidden');
+}
+
+function enableConfirm() {
+  const btn = document.getElementById('btnConfirmar');
+  btn.disabled = false;
+  btn.className = 'w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-all text-sm shadow-sm cursor-pointer';
+}
+function disableConfirm() {
+  const btn = document.getElementById('btnConfirmar');
+  btn.disabled = true;
+  btn.className = 'w-full py-3 bg-gray-200 text-gray-400 font-semibold rounded-xl cursor-not-allowed transition-all text-sm';
+}
+
+document.getElementById('btnConfirmar').onclick = async () => {
+  const btn = document.getElementById('btnConfirmar');
+  const errDiv = document.getElementById('citaError');
+  btn.textContent = 'Procesando...'; btn.disabled = true;
+  errDiv.classList.add('hidden');
+
+  const res = await fetch(`${API}/citas/create/`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      medico_id: selectedMedico.id,
+      fecha: selectedFecha,
+      hora: selectedHora,
+      motivo: document.getElementById('motivoInput').value,
+      tipo_cita: tipoCita,
+      canal_solicitud: 'web',
+    }),
   });
 
-  function selectHora(hora, e) {
-    selectedHora = hora;
-    document.querySelectorAll('#horasList button').forEach(b => {
-      b.classList.remove('bg-slate-900', 'text-white', 'border-slate-900');
-      b.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
-    });
-    
-    e.target.classList.remove('bg-white', 'text-gray-700', 'border-gray-200', 'hover:border-slate-400');
-    e.target.classList.add('bg-slate-900', 'text-white', 'border-slate-900');
-    
-    const btn = document.getElementById('btnConfirmar');
+  if (res.ok) {
+    document.getElementById('formContainer').classList.add('hidden');
+    document.getElementById('sectionExito').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    const data = await res.json();
+    errDiv.textContent = data.error || 'Error al crear la cita.';
+    errDiv.classList.remove('hidden');
+    btn.textContent = 'Confirmar Cita';
     btn.disabled = false;
-    btn.classList.remove('bg-gray-200', 'text-gray-500', 'cursor-not-allowed');
-    btn.classList.add('bg-slate-900', 'text-white', 'hover:bg-slate-800');
-    btn.textContent = 'Continuar a confirmación →';
+    enableConfirm(); // restore style
   }
+};
 
-  function confirmarCita() {
-    document.getElementById('confEspecialidad').textContent = selectedEspecialidad.nombre;
-    document.getElementById('confMedico').textContent = selectedMedico.nombre;
-    
-    const d = new Date(selectedFecha + 'T00:00:00');
-    const fDate = d.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('confFecha').textContent = fDate.charAt(0).toUpperCase() + fDate.slice(1);
-    
-    document.getElementById('confHora').textContent = selectedHora;
-    document.getElementById('confMotivo').textContent = document.getElementById('motivo').value || 'Ninguno especificado.';
-    goStep(4);
-  }
-
-  async function crearCita() {
-    const btn = document.getElementById('btnCrearCita');
-    btn.textContent = 'Procesando...';
-    btn.disabled = true;
-    btn.classList.add('opacity-75');
-
-    const res = await fetch('http://localhost:8000/api/citas/create/', {
-      method: 'POST',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        medico_id: selectedMedico.id,
-        fecha: selectedFecha,
-        hora: selectedHora,
-        motivo: document.getElementById('motivo').value
-      })
-    });
-
-    if (res.ok) {
-      document.getElementById('step4').classList.add('hidden');
-      document.getElementById('success').classList.remove('hidden');
-    } else {
-      btn.textContent = 'Confirmar Agendamiento';
-      btn.disabled = false;
-      btn.classList.remove('opacity-75');
-      const data = await res.json();
-      alert(data.error || 'Error al crear la cita');
-    }
-  }
-
-  function goStep(step) {
-    [1,2,3,4].forEach(s => {
-      const stepDiv = document.getElementById(`step${s}`);
-      stepDiv.classList.add('hidden');
-      stepDiv.classList.remove('opacity-100');
-      stepDiv.classList.add('opacity-0');
-      
-      const ind = document.getElementById(`step${s}Indicator`);
-      ind.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
-      ind.classList.add('text-gray-400');
-      ind.querySelector('span').classList.remove('bg-white/20');
-      ind.querySelector('span').classList.add('bg-gray-100');
-    });
-    
-    const currStepDiv = document.getElementById(`step${step}`);
-    currStepDiv.classList.remove('hidden');
-    // Pequeño timeout para que la transición CSS funcione al quitar hidden
-    setTimeout(() => {
-      currStepDiv.classList.remove('opacity-0');
-      currStepDiv.classList.add('opacity-100');
-    }, 10);
-    
-    const currInd = document.getElementById(`step${step}Indicator`);
-    currInd.classList.remove('text-gray-400');
-    currInd.classList.add('bg-slate-900', 'text-white', 'shadow-sm');
-    currInd.querySelector('span').classList.remove('bg-gray-100');
-    currInd.querySelector('span').classList.add('bg-white/20');
-  }
-
-  // Event listeners para botones de navegación
-  document.getElementById('btnVolver2').onclick = () => goStep(1);
-  document.getElementById('btnVolver3').onclick = () => goStep(2);
-  document.getElementById('btnVolver4').onclick = () => goStep(3);
-  document.getElementById('btnConfirmar').onclick = confirmarCita;
-  document.getElementById('btnCrearCita').onclick = crearCita;
-  document.getElementById('btnNuevaCita').onclick = () => location.reload();
-
-  loadEspecialidades();
+// Init
+loadMedicos(null);
 </script>

@@ -6,13 +6,19 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 class="text-3xl font-semibold tracking-tight text-gray-900">Historial de Citas</h1>
-        <p class="text-gray-500 font-medium mt-1">Revise todas sus atenciones y consultas médicas</p>
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Historial de Citas</h1>
+        <p class="text-gray-500 mt-1">Revise todas sus atenciones y consultas médicas</p>
       </div>
-      <a href="/dashboard/agendar" class="px-5 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Nueva Consulta
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="/dashboard/ordenes" class="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm flex items-center gap-2">
+          <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Mis Órdenes
+        </a>
+        <a href="/dashboard/agendar" class="px-4 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          Nueva Consulta
+        </a>
+      </div>
     </div>
 
     <!-- Filtros -->
@@ -21,6 +27,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       <button onclick="filterCitas('programada')" id="filterProgramada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Próximas</button>
       <button onclick="filterCitas('completada')" id="filterCompletada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Completadas</button>
       <button onclick="filterCitas('cancelada')" id="filterCancelada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Canceladas</button>
+      <button onclick="filterCitas('especializada')" id="filterEspecializada" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 whitespace-nowrap transition-colors shadow-sm">Especialistas</button>
     </div>
 
     <div id="citasContainer" class="space-y-4">
@@ -55,7 +62,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   }
 
   function filterCitas(estado) {
-    const states = ['Todas', 'Programada', 'Completada', 'Cancelada'];
+    const states = ['Todas', 'Programada', 'Completada', 'Cancelada', 'Especializada'];
     states.forEach(e => {
       const btn = document.getElementById('filter' + e);
       if(!btn) return;
@@ -66,7 +73,10 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       }
     });
 
-    const filtered = estado === 'todas' ? todasCitas : todasCitas.filter(c => c.estado === estado);
+    let filtered;
+    if (estado === 'todas') filtered = todasCitas;
+    else if (estado === 'especializada') filtered = todasCitas.filter(c => c.tipo_cita === 'especializada');
+    else filtered = todasCitas.filter(c => c.estado === estado);
     const container = document.getElementById('citasContainer');
 
     if (filtered.length === 0) {
@@ -84,8 +94,15 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       return;
     }
 
+    const TIPO_LABELS = { general: 'Medicina General', especializada: 'Especialista', prioritaria: 'Prioritaria' };
+    const TIPO_COLORS = {
+      general: 'bg-teal-50 text-teal-700 border-teal-200',
+      especializada: 'bg-slate-100 text-slate-700 border-slate-200',
+      prioritaria: 'bg-amber-50 text-amber-700 border-amber-200',
+    };
     const estadoColors = {
       'programada': { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'PRÓXIMA' },
+      'pendiente_autorizacion': { bg: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'PEND. AUTORIZACIÓN' },
       'completada': { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', label: 'COMPLETADA' },
       'cancelada': { bg: 'bg-red-50 border-red-200', text: 'text-red-700', label: 'CANCELADA' },
       'no_asistio': { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'NO ASISTIÓ' }
@@ -93,16 +110,17 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
     const formatFecha = (fechaStr) => {
       const d = new Date(fechaStr + 'T00:00:00');
-      const dia = d.getDate();
-      const mes = d.toLocaleDateString('es-ES', { month: 'short' });
-      const año = d.getFullYear();
-      return { dia, mes, año };
+      return { dia: d.getDate(), mes: d.toLocaleDateString('es-CO', { month: 'short' }), año: d.getFullYear() };
     };
 
     container.innerHTML = filtered.map(c => {
       const color = estadoColors[c.estado] || estadoColors.programada;
       const { dia, mes, año } = formatFecha(c.fecha);
-      
+      const tipoColor = TIPO_COLORS[c.tipo_cita] || TIPO_COLORS.general;
+      const tipoLabel = TIPO_LABELS[c.tipo_cita] || c.tipo_cita;
+      const cuota = c.exento_cuota ? '$0 (Exento)' : c.cuota_moderadora ? `$${Number(c.cuota_moderadora).toLocaleString('es-CO')}` : '';
+      const epsNombre = c.paciente?.eps?.nombre || '';
+
       return `
         <div class="bg-white rounded-3xl border border-gray-100 hover:border-gray-200 shadow-sm transition-colors p-6 sm:p-8">
           <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-6">
@@ -111,22 +129,32 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
                 <span class="text-xs font-semibold uppercase text-slate-500 tracking-wider">${mes}</span>
                 <span class="text-xl font-bold text-slate-800 leading-none mt-1">${dia}</span>
               </div>
-              <div>
-                <h3 class="font-bold text-gray-900 text-xl mb-1">Dr. ${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</h3>
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                  <h3 class="font-bold text-gray-900 text-xl">Dr. ${c.medico?.first_name || ''} ${c.medico?.last_name || ''}</h3>
+                  <span class="px-2 py-0.5 border rounded-full text-xs font-semibold ${tipoColor}">${tipoLabel}</span>
+                </div>
                 <div class="flex flex-wrap items-center gap-3 text-sm font-medium text-gray-500">
                   <span class="flex items-center gap-1.5 text-slate-600">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     ${c.hora.substring(0,5)}
                   </span>
                   <span class="text-gray-300">•</span>
-                  <span>${c.medico?.especialidad?.nombre || 'Consulta General'}</span>
+                  <span>${c.medico?.especialidad?.nombre || 'Consulta'}</span>
                   <span class="text-gray-300">•</span>
                   <span>${año}</span>
+                  ${epsNombre ? `<span class="text-gray-300">•</span><span class="text-teal-600 font-semibold">${epsNombre}</span>` : ''}
                 </div>
-                ${c.motivo ? `<div class="mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100 text-gray-700 text-sm leading-relaxed"><span class="font-semibold text-gray-900">Motivo:</span> ${c.motivo}</div>` : ''}
+                ${c.autorizacion ? `
+                  <div class="mt-2 flex items-center gap-2">
+                    <span class="text-xs text-emerald-600 font-semibold">Aut. EPS:</span>
+                    <span class="font-mono text-xs text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">${c.autorizacion.numero_autorizacion}</span>
+                    <span class="text-xs text-gray-400">· Vence ${c.autorizacion.fecha_vigencia}</span>
+                  </div>` : ''}
+                ${cuota ? `<p class="text-xs text-gray-400 mt-1">Cuota moderadora: <span class="font-semibold text-gray-600">${cuota}</span></p>` : ''}
+                ${c.motivo ? `<div class="mt-3 bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700 text-sm"><span class="font-semibold text-gray-900">Motivo:</span> ${c.motivo}</div>` : ''}
               </div>
             </div>
-            
             <div class="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-4 border-t border-gray-100 sm:border-0 pt-4 sm:pt-0 shrink-0">
               <span class="px-3 py-1.5 ${color.bg} ${color.text} border rounded-lg text-xs font-bold tracking-wider">${color.label}</span>
               ${c.estado === 'programada' ? `

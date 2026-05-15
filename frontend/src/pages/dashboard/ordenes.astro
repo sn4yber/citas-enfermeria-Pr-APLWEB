@@ -1,0 +1,345 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Mis Órdenes Médicas">
+  <div class="max-w-3xl mx-auto space-y-6">
+
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-gray-900">Mis Órdenes Médicas</h1>
+      <p class="text-gray-500 mt-1">Órdenes emitidas por su médico y autorizaciones de su EPS</p>
+    </div>
+
+    <!-- Estado legend -->
+    <div class="flex flex-wrap gap-3 text-xs font-semibold">
+      <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>Pendiente autorización EPS
+      </span>
+      <span class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Autorizada — puede agendar
+      </span>
+      <span class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 border border-red-100 rounded-full">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-400 inline-block"></span>Rechazada o vencida
+      </span>
+    </div>
+
+    <div id="ordenesContainer">
+      <div class="flex justify-center py-16">
+        <svg class="animate-spin h-7 w-7 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer para agendar especialista -->
+  <div id="drawerOverlay" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50" onclick="closeDrawer()"></div>
+  <div id="drawer" class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 translate-x-full transition-transform duration-300 overflow-y-auto flex flex-col">
+    <div class="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">Agendar Especialista</h2>
+        <p class="text-sm text-gray-500" id="drawerEspecialidad"></p>
+      </div>
+      <button onclick="closeDrawer()" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Autorización info -->
+    <div id="drawerAutInfo" class="mx-6 mt-5 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-800"></div>
+
+    <!-- Médicos -->
+    <div class="p-6 flex-1 space-y-5">
+      <div>
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Seleccionar médico</label>
+        <div id="drawerMedicos" class="space-y-2">
+          <div class="flex justify-center py-6">
+            <svg class="animate-spin h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          </div>
+        </div>
+      </div>
+
+      <div id="drawerFechaSection" class="hidden space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Fecha</label>
+          <input type="date" id="drawerFecha"
+            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none font-medium text-gray-700" />
+        </div>
+        <div id="drawerHorasSection" class="hidden">
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Horarios disponibles</label>
+          <div id="drawerHorasList" class="grid grid-cols-3 gap-2"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Motivo <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
+          <textarea id="drawerMotivo" rows="2"
+            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-slate-900 outline-none text-gray-700 resize-none text-sm"
+            placeholder="Indicaciones del médico general..."></textarea>
+        </div>
+      </div>
+
+      <div id="drawerError" class="hidden p-3 text-sm text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
+    </div>
+
+    <div class="p-6 border-t border-gray-100 sticky bottom-0 bg-white">
+      <button id="drawerBtnConfirmar" disabled
+        class="w-full py-3.5 bg-gray-200 text-gray-500 font-semibold rounded-xl cursor-not-allowed transition-colors text-sm">
+        Seleccione médico, fecha y hora
+      </button>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+// @ts-nocheck
+const API = 'http://localhost:8000/api';
+const token = localStorage.getItem('token');
+if (!token || localStorage.getItem('rol') !== 'paciente') {
+  window.location.replace('/auth/login');
+  throw new Error();
+}
+
+let currentOrden = null;
+let drawerMedico = null;
+let drawerFecha = null;
+let drawerHora = null;
+
+const ESTADO_MAP = {
+  pendiente_autorizacion: { bg: 'bg-amber-50 border-amber-100', badge: 'bg-amber-100 text-amber-700', label: 'Pendiente de autorización EPS' },
+  autorizada:             { bg: 'bg-emerald-50 border-emerald-100', badge: 'bg-emerald-100 text-emerald-700', label: 'Autorizada' },
+  rechazada:              { bg: 'bg-red-50 border-red-100', badge: 'bg-red-100 text-red-700', label: 'Rechazada' },
+  vencida:                { bg: 'bg-gray-50 border-gray-200', badge: 'bg-gray-100 text-gray-500', label: 'Vencida' },
+};
+
+async function loadOrdenes() {
+  const res = await fetch(`${API}/ordenes-medicas/`, { headers: { Authorization: `Bearer ${token}` } });
+  const ordenes = await res.json();
+  const container = document.getElementById('ordenesContainer');
+
+  if (!ordenes.length) {
+    container.innerHTML = `
+      <div class="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+        <div class="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+          <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="text-gray-600 font-semibold mb-1">No tiene órdenes médicas</p>
+        <p class="text-gray-400 text-sm mb-5">Su médico general emitirá una orden si necesita atención especializada.</p>
+        <a href="/dashboard/agendar" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors">
+          Agendar Medicina General
+        </a>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = ordenes.map(o => {
+    const aut = o.autorizacion;
+    const estadoInfo = ESTADO_MAP[o.estado] || ESTADO_MAP.vencida;
+    const vigencia = aut ? new Date(aut.fecha_vigencia) : null;
+    const hoy = new Date();
+    const diasRestantes = vigencia ? Math.ceil((vigencia - hoy) / 86400000) : 0;
+    const puedeAgendar = o.estado === 'autorizada' && aut?.estado === 'aprobada' && diasRestantes > 0;
+
+    return `
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-2">
+              <h3 class="font-bold text-gray-900">${o.especialidad_solicitada?.nombre || 'Especialidad'}</h3>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${estadoInfo.badge}">${estadoInfo.label}</span>
+            </div>
+            <p class="text-sm text-gray-500">
+              Emitida por Dr. ${o.medico_solicitante?.nombre || o.medico_solicitante?.first_name + ' ' + o.medico_solicitante?.last_name || ''}
+            </p>
+            <p class="text-xs text-gray-400 mt-0.5">Fecha: ${o.fecha_emision} · Vigencia: ${o.vigencia_dias} días</p>
+            ${o.observaciones ? `<p class="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg p-2 border border-gray-100">${o.observaciones}</p>` : ''}
+          </div>
+
+          ${puedeAgendar ? `
+            <button onclick='openDrawer(${JSON.stringify(o)})'
+              class="shrink-0 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Agendar Especialista
+            </button>
+          ` : ''}
+        </div>
+
+        ${aut ? `
+          <div class="px-5 pb-5">
+            <div class="p-4 ${estadoInfo.bg} border rounded-xl">
+              <div class="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs">
+                <span><span class="font-bold text-gray-500 uppercase tracking-wider">Autorización</span> <span class="font-mono font-semibold text-slate-700">${aut.numero_autorizacion}</span></span>
+                <span><span class="font-bold text-gray-500 uppercase tracking-wider">EPS</span> <span class="font-semibold text-gray-700">${aut.eps?.nombre || ''}</span></span>
+                <span><span class="font-bold text-gray-500 uppercase tracking-wider">Vence</span> <span class="font-semibold ${diasRestantes > 0 ? 'text-emerald-700' : 'text-red-600'}">${aut.fecha_vigencia} ${diasRestantes > 0 ? `(${diasRestantes} días)` : '(vencida)'}</span></span>
+              </div>
+              ${aut.servicios_autorizados ? `<p class="text-xs text-gray-500 mt-2">${aut.servicios_autorizados}</p>` : ''}
+            </div>
+          </div>
+        ` : `
+          <div class="px-5 pb-5">
+            <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700">
+              <strong>En proceso:</strong> Su EPS está revisando la orden. Una vez autorizada podrá agendar la cita con el especialista.
+            </div>
+          </div>
+        `}
+      </div>`;
+  }).join('');
+}
+
+window.openDrawer = async (orden) => {
+  currentOrden = orden;
+  drawerMedico = null; drawerFecha = null; drawerHora = null;
+
+  const aut = orden.autorizacion;
+  document.getElementById('drawerEspecialidad').textContent = orden.especialidad_solicitada?.nombre || '';
+  document.getElementById('drawerAutInfo').innerHTML =
+    `<strong>Autorización:</strong> ${aut.numero_autorizacion} · ${aut.eps?.nombre || ''} · vence ${aut.fecha_vigencia}`;
+  document.getElementById('drawerError').classList.add('hidden');
+  document.getElementById('drawerFechaSection').classList.add('hidden');
+  document.getElementById('drawerHorasSection').classList.add('hidden');
+  resetDrawerBtn();
+
+  document.getElementById('drawer').classList.remove('translate-x-full');
+  document.getElementById('drawerOverlay').classList.remove('hidden');
+
+  // Load doctors for this specialty
+  const res = await fetch(`${API}/medicos/?especialidad=${orden.especialidad_solicitada?.id}`);
+  const medicos = await res.json();
+  const container = document.getElementById('drawerMedicos');
+  container.innerHTML = '';
+
+  if (!medicos.length) {
+    container.innerHTML = `<p class="text-sm text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-100">No hay médicos disponibles para esta especialidad.</p>`;
+    return;
+  }
+
+  medicos.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'dr-btn w-full p-4 bg-white border-2 border-gray-100 rounded-xl hover:border-slate-300 transition-all text-left flex items-center gap-3';
+    btn.innerHTML = `
+      <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
+        ${(m.first_name[0]||'')+(m.last_name[0]||'')}
+      </div>
+      <div>
+        <p class="font-semibold text-gray-900 text-sm">Dr. ${m.first_name} ${m.last_name}</p>
+        <p class="text-xs text-gray-400">${m.especialidad?.nombre || ''}</p>
+      </div>`;
+    btn.onclick = () => selectDrawerMedico(m.id, `Dr. ${m.first_name} ${m.last_name}`, btn);
+    container.appendChild(btn);
+  });
+};
+
+function selectDrawerMedico(id, nombre, btn) {
+  drawerMedico = { id, nombre };
+  document.querySelectorAll('.dr-btn').forEach(b => {
+    b.className = 'dr-btn w-full p-4 bg-white border-2 border-gray-100 rounded-xl hover:border-slate-300 transition-all text-left flex items-center gap-3';
+  });
+  btn.className = 'dr-btn w-full p-4 bg-slate-50 border-2 border-slate-900 rounded-xl transition-all text-left flex items-center gap-3';
+  const mañana = new Date(); mañana.setDate(mañana.getDate() + 1);
+  document.getElementById('drawerFecha').min = mañana.toISOString().split('T')[0];
+  document.getElementById('drawerFechaSection').classList.remove('hidden');
+  drawerFecha = null; drawerHora = null;
+  document.getElementById('drawerHorasSection').classList.add('hidden');
+  resetDrawerBtn();
+}
+
+document.getElementById('drawerFecha').addEventListener('change', async (e) => {
+  drawerFecha = e.target.value;
+  drawerHora = null;
+  resetDrawerBtn();
+  if (!drawerMedico) return;
+
+  const res = await fetch(`${API}/disponibilidad/?medico_id=${drawerMedico.id}&fecha=${drawerFecha}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  const horasSection = document.getElementById('drawerHorasSection');
+  const list = document.getElementById('drawerHorasList');
+  horasSection.classList.remove('hidden');
+  list.innerHTML = '';
+
+  if (data.error || !data.horarios_disponibles?.length) {
+    list.innerHTML = `<div class="col-span-full p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100">${data.error || 'Sin horarios disponibles.'}</div>`;
+    return;
+  }
+  data.horarios_disponibles.forEach(h => {
+    const btn = document.createElement('button');
+    btn.className = 'dh-btn py-2.5 text-xs border border-gray-200 bg-white rounded-xl hover:border-slate-400 font-semibold text-gray-700 transition-all';
+    btn.textContent = h;
+    btn.onclick = (ev) => selectDrawerHora(h, ev.currentTarget);
+    list.appendChild(btn);
+  });
+});
+
+function selectDrawerHora(hora, btn) {
+  drawerHora = hora;
+  document.querySelectorAll('.dh-btn').forEach(b => {
+    b.className = 'dh-btn py-2.5 text-xs border border-gray-200 bg-white rounded-xl hover:border-slate-400 font-semibold text-gray-700 transition-all';
+  });
+  btn.className = 'dh-btn py-2.5 text-xs border-2 border-slate-900 bg-slate-900 text-white rounded-xl font-semibold transition-all';
+  activateDrawerBtn();
+}
+
+function resetDrawerBtn() {
+  const btn = document.getElementById('drawerBtnConfirmar');
+  btn.disabled = true;
+  btn.className = 'w-full py-3.5 bg-gray-200 text-gray-500 font-semibold rounded-xl cursor-not-allowed transition-colors text-sm';
+  btn.textContent = 'Seleccione médico, fecha y hora';
+  btn.onclick = null;
+}
+
+function activateDrawerBtn() {
+  const btn = document.getElementById('drawerBtnConfirmar');
+  btn.disabled = false;
+  btn.className = 'w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors text-sm';
+  btn.textContent = 'Confirmar Cita con Especialista';
+  btn.onclick = confirmarCitaEspecialista;
+}
+
+async function confirmarCitaEspecialista() {
+  const btn = document.getElementById('drawerBtnConfirmar');
+  const errDiv = document.getElementById('drawerError');
+  btn.textContent = 'Procesando...'; btn.disabled = true;
+  errDiv.classList.add('hidden');
+
+  const res = await fetch(`${API}/citas/create/`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      medico_id: drawerMedico.id,
+      fecha: drawerFecha,
+      hora: drawerHora,
+      motivo: document.getElementById('drawerMotivo').value,
+      tipo_cita: 'especializada',
+      canal_solicitud: 'web',
+      orden_medica_id: currentOrden.id,
+      autorizacion_id: currentOrden.autorizacion?.id,
+    }),
+  });
+
+  if (res.ok) {
+    closeDrawer();
+    // Reload with success message
+    document.getElementById('ordenesContainer').insertAdjacentHTML('afterbegin', `
+      <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-800 text-sm font-medium mb-2">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        ¡Cita con especialista agendada! Puede verla en <a href="/dashboard/citas" class="underline font-bold ml-1">Mis Citas</a>.
+      </div>`);
+    loadOrdenes();
+  } else {
+    const data = await res.json();
+    errDiv.textContent = data.error || 'Error al agendar la cita.';
+    errDiv.classList.remove('hidden');
+    btn.textContent = 'Confirmar Cita con Especialista';
+    btn.disabled = false;
+  }
+}
+
+window.closeDrawer = () => {
+  document.getElementById('drawer').classList.add('translate-x-full');
+  document.getElementById('drawerOverlay').classList.add('hidden');
+};
+
+loadOrdenes();
+</script>

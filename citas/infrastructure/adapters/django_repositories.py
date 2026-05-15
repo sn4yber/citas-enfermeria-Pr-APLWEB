@@ -1,6 +1,6 @@
 from typing import List, Optional
 from django.contrib.auth import get_user_model
-from citas.models import Cita, Especialidad
+from citas.models import Cita, Especialidad, EPS, OrdenMedica, AutorizacionEPS
 
 Usuario = get_user_model()
 
@@ -81,6 +81,71 @@ class CitaRepository:
             return True
         except Cita.DoesNotExist:
             return False
+
+
+class EPSRepository:
+    def get_all_activas(self) -> List[EPS]:
+        return list(EPS.objects.filter(activa=True).order_by('nombre'))
+
+    def get_all(self) -> List[EPS]:
+        return list(EPS.objects.all().order_by('nombre'))
+
+    def get_by_id(self, eps_id: int) -> Optional[EPS]:
+        try:
+            return EPS.objects.get(id=eps_id)
+        except EPS.DoesNotExist:
+            return None
+
+    def save(self, eps: EPS) -> EPS:
+        eps.save()
+        return eps
+
+
+class OrdenMedicaRepository:
+    def get_all(self) -> List[OrdenMedica]:
+        return list(OrdenMedica.objects.select_related(
+            'paciente', 'medico_solicitante', 'especialidad_solicitada'
+        ).order_by('-creado_en'))
+
+    def get_by_paciente(self, paciente_id: int) -> List[OrdenMedica]:
+        return list(OrdenMedica.objects.filter(
+            paciente_id=paciente_id
+        ).select_related('especialidad_solicitada').order_by('-creado_en'))
+
+    def get_pendientes(self) -> List[OrdenMedica]:
+        return list(OrdenMedica.objects.filter(
+            estado='pendiente_autorizacion'
+        ).select_related('paciente', 'medico_solicitante', 'especialidad_solicitada').order_by('-creado_en'))
+
+    def get_by_id(self, orden_id: int) -> Optional[OrdenMedica]:
+        try:
+            return OrdenMedica.objects.select_related(
+                'paciente', 'medico_solicitante', 'especialidad_solicitada'
+            ).get(id=orden_id)
+        except OrdenMedica.DoesNotExist:
+            return None
+
+    def save(self, orden: OrdenMedica) -> OrdenMedica:
+        orden.save()
+        return orden
+
+
+class AutorizacionEPSRepository:
+    def get_by_orden(self, orden_id: int) -> Optional[AutorizacionEPS]:
+        try:
+            return AutorizacionEPS.objects.get(orden_id=orden_id)
+        except AutorizacionEPS.DoesNotExist:
+            return None
+
+    def get_by_id(self, autorizacion_id: int) -> Optional[AutorizacionEPS]:
+        try:
+            return AutorizacionEPS.objects.select_related('eps', 'orden').get(id=autorizacion_id)
+        except AutorizacionEPS.DoesNotExist:
+            return None
+
+    def save(self, autorizacion: AutorizacionEPS) -> AutorizacionEPS:
+        autorizacion.save()
+        return autorizacion
 
 
 class EspecialidadRepository:

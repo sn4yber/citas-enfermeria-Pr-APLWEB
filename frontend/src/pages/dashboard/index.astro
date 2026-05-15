@@ -18,16 +18,26 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     </div>
 
     <div class="grid md:grid-cols-3 gap-6">
-      <!-- Acción principal -->
-      <div class="md:col-span-1">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-full flex flex-col justify-center">
-          <div class="w-12 h-12 bg-slate-50 text-slate-800 rounded-xl flex items-center justify-center mb-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+      <!-- Acciones principales -->
+      <div class="md:col-span-1 flex flex-col gap-4">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
+          <div class="w-10 h-10 bg-slate-50 text-slate-700 rounded-xl flex items-center justify-center mb-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
           </div>
-          <h2 class="text-xl font-semibold text-gray-900 mb-2">Atención Médica</h2>
-          <p class="text-gray-500 text-sm mb-6">Programe una nueva cita con nuestros especialistas.</p>
-          <a href="/dashboard/agendar" class="mt-auto block text-center px-6 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-colors shadow-sm">
-            Agendar Consulta
+          <h2 class="text-base font-semibold text-gray-900 mb-1">Agendar Consulta</h2>
+          <p class="text-gray-400 text-xs mb-4 flex-1">Cita de medicina general, primer paso del SGSSS.</p>
+          <a href="/dashboard/agendar" class="block text-center px-5 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors text-sm">
+            Ir a Agendar
+          </a>
+        </div>
+        <div id="ordenesCard" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col hidden">
+          <div class="w-10 h-10 bg-teal-50 text-teal-700 rounded-xl flex items-center justify-center mb-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <h2 class="text-base font-semibold text-gray-900 mb-1">Mis Órdenes <span id="ordenesCardCount" class="ml-1 text-xs font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full"></span></h2>
+          <p class="text-gray-400 text-xs mb-4 flex-1">Tiene órdenes autorizadas por su EPS listas para agendar.</p>
+          <a href="/dashboard/ordenes" class="block text-center px-5 py-2.5 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition-colors text-sm">
+            Ver Órdenes
           </a>
         </div>
       </div>
@@ -124,4 +134,16 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   }
 
   loadCitas();
+
+  // Show ordenes card if there are authorized orders
+  fetch('http://localhost:8000/api/ordenes-medicas/', { headers: { Authorization: `Bearer ${token}` } })
+    .then(r => r.json())
+    .then(ordenes => {
+      const autorizadas = ordenes.filter(o => o.estado === 'autorizada' && o.autorizacion?.estado === 'aprobada');
+      if (autorizadas.length) {
+        const card = document.getElementById('ordenesCard');
+        document.getElementById('ordenesCardCount').textContent = autorizadas.length;
+        card.classList.remove('hidden');
+      }
+    }).catch(() => {});
 </script>
