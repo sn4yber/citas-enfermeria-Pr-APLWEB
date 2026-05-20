@@ -187,10 +187,15 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
-# CORS — en producción definir CORS_ALLOWED_ORIGINS=https://tu-app.vercel.app
+# CORS — API en Render, frontend en Vercel
+# Render env:
+#   CORS_ALLOWED_ORIGINS=https://tu-proyecto.vercel.app
+#   CORS_ALLOWED_ORIGIN_REGEXES=^https://.*\.vercel\.app$  (previews/branches)
 _cors_origins = env.list('CORS_ALLOWED_ORIGINS', default=[])
-if _cors_origins:
+_cors_origin_regexes = env.list('CORS_ALLOWED_ORIGIN_REGEXES', default=[])
+if _cors_origins or _cors_origin_regexes:
     CORS_ALLOWED_ORIGINS = _cors_origins
+    CORS_ALLOWED_ORIGIN_REGEXES = _cors_origin_regexes
     CORS_ALLOW_ALL_ORIGINS = False
 else:
     CORS_ALLOW_ALL_ORIGINS = True
