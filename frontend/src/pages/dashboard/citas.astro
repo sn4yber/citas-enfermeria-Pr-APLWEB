@@ -51,7 +51,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   let todasCitas = [];
 
   async function loadCitas() {
-    const res = await fetch('http://localhost:8000/api/citas/', {
+    const res = await fetch(`${window.__API__}/citas/`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     
@@ -170,7 +170,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   window.cancelarCita = async (id) => {
     if (!confirm('¿Está seguro de que desea cancelar esta cita? Esta acción no se puede deshacer.')) return;
     
-    const res = await fetch(`http://localhost:8000/api/citas/${id}/`, {
+    const res = await fetch(`${window.__API__}/citas/${id}/`, {
       method: 'PUT',
       headers: { 
         'Authorization': `Bearer ${token}`,

@@ -186,7 +186,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     successContainer?.classList.add('hidden');
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/register/', {
+      const res = await fetch(`${window.__API__}/auth/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

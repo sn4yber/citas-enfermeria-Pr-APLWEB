@@ -168,7 +168,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
-  const API = 'http://localhost:8000/api';
+  const API = window.__API__;
 
   // Load EPS list
   async function loadEPS() {

@@ -89,7 +89,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     window.location.href = '/admin/login';
   }
 
-  const API = 'http://localhost:8000/api';
+  const API = window.__API__;
   const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
   let todosPacientes = [];
   let todasCitas = [];

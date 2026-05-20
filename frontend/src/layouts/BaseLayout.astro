@@ -1,4 +1,6 @@
 ---
+import ApiConfig from '../components/ApiConfig.astro';
+
 interface Props {
   title?: string;
   description?: string;
@@ -74,6 +76,7 @@ const {
     </script>
   </head>
   <body class="bg-gray-50 min-h-screen font-sans">
+    <ApiConfig />
     <slot />
   </body>
 </html>

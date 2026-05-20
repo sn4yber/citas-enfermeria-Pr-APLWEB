@@ -2,14 +2,6 @@
 import MedicalLayout from '../../layouts/MedicalLayout.astro';
 ---
 
-<style>
-  .ctab-active {
-    border-bottom: 2px solid #0f172a;
-    color: #0f172a;
-    background: #f8fafc;
-  }
-</style>
-
 <MedicalLayout title="Mi Agenda">
   <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -104,214 +96,45 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
     </div>
   </div>
 
-  <!-- ══ DRAWER CONSULTA MÉDICA ══════════════════════════════ -->
-  <div id="consultaOverlay" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40" onclick="cerrarConsulta()"></div>
-  <div id="consultaDrawer"
-    class="fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-2xl z-50 translate-x-full transition-transform duration-300 flex flex-col">
+  <!-- Flujo SGSSS -->
+  <div class="mb-6 bg-white border border-gray-100 rounded-2xl p-4 flex flex-wrap items-center gap-3 text-sm">
+    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest shrink-0">Flujo</span>
+    <span class="px-2.5 py-1 bg-teal-50 text-teal-700 rounded-lg font-semibold text-xs">1. Atender cita</span>
+    <span class="text-gray-300">→</span>
+    <span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg font-semibold text-xs">2. Remitir (si aplica)</span>
+    <span class="text-gray-300">→</span>
+    <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg font-semibold text-xs">3. Admin autoriza EPS</span>
+    <span class="text-gray-300">→</span>
+    <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg font-semibold text-xs">4. Paciente agenda especialista</span>
+  </div>
 
-    <!-- Header -->
-    <div class="px-6 py-4 border-b border-gray-100 flex items-start justify-between shrink-0 bg-white sticky top-0 z-10">
-      <div>
-        <h2 class="text-base font-bold text-gray-900">Consulta Médica</h2>
-        <p class="text-sm text-gray-400 mt-0.5" id="drawerPacienteInfo"></p>
-      </div>
-      <button onclick="cerrarConsulta()" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 mt-0.5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <!-- Tabs de la consulta -->
-    <div class="flex border-b border-gray-100 shrink-0 overflow-x-auto">
-      <button onclick="switchConsultaTab('sv')" id="ctSV" class="ctab ctab-active px-4 py-3 text-xs font-bold whitespace-nowrap">Signos Vitales</button>
-      <button onclick="switchConsultaTab('an')" id="ctAN" class="ctab px-4 py-3 text-xs font-medium text-gray-500 whitespace-nowrap hover:bg-gray-50">Anamnesis</button>
-      <button onclick="switchConsultaTab('dx')" id="ctDX" class="ctab px-4 py-3 text-xs font-medium text-gray-500 whitespace-nowrap hover:bg-gray-50">Diagnóstico</button>
-      <button onclick="switchConsultaTab('rx')" id="ctRX" class="ctab px-4 py-3 text-xs font-medium text-gray-500 whitespace-nowrap hover:bg-gray-50">Receta Médica</button>
-      <button onclick="switchConsultaTab('lab')" id="ctLAB" class="ctab px-4 py-3 text-xs font-medium text-gray-500 whitespace-nowrap hover:bg-gray-50">Laboratorio</button>
-      <button onclick="switchConsultaTab('rem')" id="ctREM" class="ctab px-4 py-3 text-xs font-medium text-gray-500 whitespace-nowrap hover:bg-gray-50">Remisión</button>
-    </div>
-
-    <!-- Body scrollable -->
-    <div class="flex-1 overflow-y-auto">
-
-      <!-- ── Signos Vitales ── -->
-      <div id="tabSV" class="p-5 space-y-4">
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Signos Vitales</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">TA (mmHg)</label>
-            <input id="sv_ta" type="text" placeholder="120/80" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">FC (lpm)</label>
-            <input id="sv_fc" type="number" placeholder="72" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">FR (rpm)</label>
-            <input id="sv_fr" type="number" placeholder="16" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Temp (°C)</label>
-            <input id="sv_temp" type="number" step="0.1" placeholder="36.5" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">SpO₂ (%)</label>
-            <input id="sv_spo2" type="number" placeholder="98" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Peso (kg)</label>
-            <input id="sv_peso" type="number" step="0.1" placeholder="70.0" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Talla (cm)</label>
-            <input id="sv_talla" type="number" step="0.1" placeholder="170" class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-        </div>
+  <!-- Modal Atender (simple) -->
+  <div id="atenderModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-gray-100 flex justify-between items-start">
         <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Examen físico</label>
-          <textarea id="sv_exfisico" rows="3" placeholder="Hallazgos del examen físico por sistemas..." class="sv-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
+          <h3 class="text-base font-bold text-gray-900">Atender consulta</h3>
+          <p class="text-sm text-gray-400 mt-0.5" id="atenderPacienteInfo"></p>
         </div>
-      </div>
-
-      <!-- ── Anamnesis ── -->
-      <div id="tabAN" class="hidden p-5 space-y-4">
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Anamnesis e Historia</p>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Motivo de consulta <span class="text-red-400">*</span></label>
-          <textarea id="an_motivo" rows="2" placeholder="Motivo principal de la consulta..." class="an-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedad actual (HEA)</label>
-          <textarea id="an_hea" rows="4" placeholder="Descripción cronológica de la enfermedad actual, inicio, evolución, síntomas acompañantes..." class="an-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Antecedentes personales</label>
-          <textarea id="an_antecedentes" rows="3" placeholder="Enfermedades previas, cirugías, alergias, medicamentos crónicos..." class="an-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Revisión por sistemas</label>
-          <textarea id="an_revision" rows="3" placeholder="Cardiovascular, respiratorio, digestivo, neurológico, musculoesquelético..." class="an-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
-        </div>
-      </div>
-
-      <!-- ── Diagnóstico ── -->
-      <div id="tabDX" class="hidden p-5 space-y-4">
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Diagnóstico y Plan</p>
-        <div class="grid grid-cols-3 gap-3">
-          <div class="col-span-2">
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Diagnóstico principal <span class="text-red-400">*</span></label>
-            <input id="dx_diag" type="text" placeholder="Nombre del diagnóstico..." class="dx-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">CIE-10</label>
-            <input id="dx_cie10" type="text" placeholder="J00" class="dx-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none font-mono uppercase"/>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Tipo de diagnóstico</label>
-          <div class="flex gap-2">
-            <button onclick="setTipoDx('presuntivo', this)" id="dx_pres" class="tipodx-btn flex-1 py-2 text-xs font-semibold border-2 border-slate-900 bg-slate-900 text-white rounded-xl transition-all">Presuntivo</button>
-            <button onclick="setTipoDx('confirmado', this)" id="dx_conf" class="tipodx-btn flex-1 py-2 text-xs font-semibold border-2 border-gray-200 text-gray-600 rounded-xl transition-all hover:border-gray-300">Confirmado</button>
-            <button onclick="setTipoDx('descartado', this)" id="dx_desc" class="tipodx-btn flex-1 py-2 text-xs font-semibold border-2 border-gray-200 text-gray-600 rounded-xl transition-all hover:border-gray-300">Descartado</button>
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Conducta / Plan de tratamiento</label>
-          <textarea id="dx_conducta" rows="3" placeholder="Tratamiento indicado, medidas generales, interconsultas..." class="dx-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Indicaciones para el paciente</label>
-          <textarea id="dx_indicaciones" rows="2" placeholder="Reposo, dieta, actividad física, signos de alarma..." class="dx-input w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 mb-1">Próximo control</label>
-          <input id="dx_control" type="date" class="dx-input px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none"/>
-        </div>
-      </div>
-
-      <!-- ── Receta Médica ── -->
-      <div id="tabRX" class="hidden p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Receta Médica</p>
-          <button onclick="addMedicamento()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Agregar medicamento
-          </button>
-        </div>
-        <div id="recetaList" class="space-y-3">
-          <div class="text-center py-8 text-gray-300 border-2 border-dashed border-gray-200 rounded-2xl">
-            <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <p class="text-xs">Sin medicamentos. Presione "Agregar medicamento".</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Laboratorio ── -->
-      <div id="tabLAB" class="hidden p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Órdenes de Laboratorio</p>
-          <button onclick="addLab()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Agregar examen
-          </button>
-        </div>
-        <div id="labList" class="space-y-2">
-          <div class="text-center py-8 text-gray-300 border-2 border-dashed border-gray-200 rounded-2xl">
-            <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-            <p class="text-xs">Sin exámenes. Presione "Agregar examen".</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Remisión a especialista ── -->
-      <div id="tabREM" class="hidden p-5 space-y-4">
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Remisión a Especialista</p>
-        <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700">
-          Al guardar una remisión se crea una <strong>Orden Médica</strong> que el área administrativa tramita ante la EPS para su autorización.
-        </div>
-        <div id="remisionesActuales" class="space-y-2"></div>
-        <div class="border border-dashed border-gray-200 rounded-2xl p-4 space-y-3" id="remFormContainer">
-          <p class="text-xs font-bold text-gray-500">Nueva remisión</p>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="col-span-2">
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Especialidad requerida</label>
-              <select id="rem_esp" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none">
-                <option value="">Seleccionar especialidad...</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Vigencia (días)</label>
-              <input id="rem_vigencia" type="number" value="30" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none"/>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Prioridad</label>
-              <select id="rem_prioridad" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none">
-                <option value="normal">Normal (5 días hábiles)</option>
-                <option value="urgente">Urgente</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Indicación clínica / motivo de remisión</label>
-            <textarea id="rem_obs" rows="2" placeholder="Diagnóstico y motivo de la remisión para el especialista..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none resize-none"></textarea>
-          </div>
-          <button onclick="agregarRemision()" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition-colors">
-            Agregar Remisión
-          </button>
-        </div>
-      </div>
-
-    </div><!-- /body -->
-
-    <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-100 bg-white shrink-0">
-      <div id="consultaError" class="hidden mb-3 p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
-      <div class="flex gap-3">
-        <button onclick="cerrarConsulta()" class="px-5 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm">Cancelar</button>
-        <button id="btnGuardarConsulta" onclick="guardarConsulta()"
-          class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-colors text-sm flex items-center justify-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          Guardar Consulta y Completar
+        <button onclick="cerrarAtender()" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
+      </div>
+      <div class="p-5 space-y-4">
+        <input type="hidden" id="atenderCitaId" />
+        <input type="hidden" id="atenderPacienteId" />
+        <input type="hidden" id="atenderTipoCita" />
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5">Notas de la consulta</label>
+          <textarea id="atenderNotas" rows="4" placeholder="Síntomas, hallazgos, recomendaciones..."
+            class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none resize-none"></textarea>
+        </div>
+        <div id="atenderError" class="hidden p-3 text-xs text-red-600 bg-red-50 rounded-xl border border-red-100"></div>
+      </div>
+      <div class="p-5 border-t border-gray-100 flex flex-col gap-2">
+        <button onclick="completarAtencion()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm">Marcar como atendida</button>
+        <button id="btnRemitirDesdeAtender" onclick="abrirRemisionDesdeAtender()" class="hidden w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl text-sm">Remitir a especialista</button>
+        <button onclick="cerrarAtender()" class="w-full py-2.5 text-gray-500 text-sm font-medium hover:text-gray-700">Cancelar</button>
       </div>
     </div>
   </div>
@@ -321,8 +144,8 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
     <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
       <div class="p-5 border-b border-gray-100 flex justify-between items-start">
         <div>
-          <h3 class="text-lg font-bold text-gray-900">Emitir Orden Médica</h3>
-          <p class="text-sm text-gray-400 mt-0.5">Orden de remisión a especialista</p>
+          <h3 class="text-lg font-bold text-gray-900">Remitir a Especialista</h3>
+          <p class="text-sm text-gray-400 mt-0.5" id="ordenPacienteLabel"></p>
         </div>
         <button onclick="document.getElementById('ordenModal').classList.add('hidden')" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors mt-0.5">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -441,7 +264,7 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
     throw new Error('No autorizado');
   }
 
-  const API = 'http://localhost:8000/api';
+  const API = window.__API__;
   const headers = { 'Authorization': `Bearer ${token}` };
   
   // TABS LOGIC
@@ -546,11 +369,9 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
         <div class="flex flex-wrap items-center gap-2">
           ${tipoBadge}
           ${autBadge}
-          <button onclick='abrirConsulta(${JSON.stringify(c).replace(/'/g,"\\'")})'
-            class="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm font-semibold transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Atender Consulta
-          </button>
+          <button onclick="abrirAtender(${c.id})"
+            class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm font-semibold transition-colors">Atender</button>
+          ${c.tipo_cita === 'general' ? `<button onclick="emitirOrden(${c.id}, ${c.paciente?.id})" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-semibold transition-colors">Remitir</button>` : ''}
           <button onclick="actualizarEstado(${c.id},'no_asistio')" class="px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors">No asistió</button>
           <button onclick="actualizarEstado(${c.id},'cancelada')" class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors">Cancelar</button>
         </div>
@@ -614,6 +435,7 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
     const res = await fetch(`${API}/citas/`, { headers });
     if (!res.ok) return;
     todasLasCitas = await res.json();
+    citasMap = Object.fromEntries(todasLasCitas.map(c => [c.id, c]));
     todasLasCitas.sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
     renderStats(todasLasCitas);
     renderCitas(null);
@@ -786,7 +608,7 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
     const lista = await res.json();
     const sel = document.getElementById('ordenEspecialidad');
     sel.innerHTML = '<option value="">Seleccionar especialidad...</option>';
-    lista.forEach(e => {
+    lista.filter(e => !e.nombre.toLowerCase().includes('general')).forEach(e => {
       const opt = document.createElement('option');
       opt.value = e.id;
       opt.textContent = e.nombre;
@@ -796,262 +618,61 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
   loadEspecialidadesOrden();
 
   window.emitirOrden = (citaId, pacienteId) => {
+    const c = citasMap[citaId];
     document.getElementById('ordenCitaId').value = citaId;
     document.getElementById('ordenPacienteId').value = pacienteId;
-    document.getElementById('ordenObservaciones').value = '';
+    document.getElementById('ordenPacienteLabel').textContent = c
+      ? `${c.paciente?.first_name||''} ${c.paciente?.last_name||''}`
+      : '';
+    document.getElementById('ordenObservaciones').value = c?.motivo || '';
     document.getElementById('ordenError').classList.add('hidden');
     document.getElementById('ordenModal').classList.remove('hidden');
   };
 
-  // ════ CONSULTA MÉDICA ════════════════════════════════════
-  let citaActual = null;
-  let tipoDxActual = 'presuntivo';
-  let medicamentos = [];
-  let laboratorios = [];
-  let remisiones = [];
 
-  const CTAB_ACTIVE = 'ctab ctab-active border-b-2 border-slate-900 text-slate-900 font-bold px-4 py-3 text-xs whitespace-nowrap';
-  const CTAB_IDLE   = 'ctab px-4 py-3 text-xs font-medium text-gray-500 whitespace-nowrap hover:bg-gray-50';
+  let citasMap = {};
 
-  window.switchConsultaTab = (tab) => {
-    ['sv','an','dx','rx','lab','rem'].forEach(t => {
-      document.getElementById('tab'+t.toUpperCase())?.classList.add('hidden');
-      const b = document.getElementById('ct'+t.toUpperCase());
-      if (b) b.className = CTAB_IDLE;
-    });
-    document.getElementById('tab'+tab.toUpperCase())?.classList.remove('hidden');
-    const ab = document.getElementById('ct'+tab.toUpperCase());
-    if (ab) ab.className = CTAB_ACTIVE;
+  window.abrirAtender = (citaId) => {
+    const c = citasMap[citaId];
+    if (!c) return;
+    document.getElementById('atenderCitaId').value = citaId;
+    document.getElementById('atenderPacienteId').value = c.paciente?.id || '';
+    document.getElementById('atenderTipoCita').value = c.tipo_cita || 'general';
+    document.getElementById('atenderPacienteInfo').textContent =
+      `${c.paciente?.first_name||''} ${c.paciente?.last_name||''} · ${c.fecha} ${c.hora?.substring(0,5)}`;
+    document.getElementById('atenderNotas').value = c.motivo || '';
+    document.getElementById('atenderError').classList.add('hidden');
+    const btnRem = document.getElementById('btnRemitirDesdeAtender');
+    btnRem.classList.toggle('hidden', c.tipo_cita !== 'general');
+    document.getElementById('atenderModal').classList.remove('hidden');
+    document.getElementById('atenderModal').classList.add('flex');
   };
 
-  window.abrirConsulta = (cita) => {
-    citaActual = cita;
-    medicamentos = []; laboratorios = []; remisiones = [];
-    const p = cita.paciente;
-    document.getElementById('drawerPacienteInfo').textContent =
-      `${p?.first_name||''} ${p?.last_name||''} · ${p?.eps?.nombre||''} · ${cita.fecha} ${cita.hora?.substring(0,5)}`;
-    // Reset all fields
-    ['sv_ta','sv_fc','sv_fr','sv_temp','sv_spo2','sv_peso','sv_talla','sv_exfisico',
-     'an_motivo','an_hea','an_antecedentes','an_revision',
-     'dx_diag','dx_cie10','dx_conducta','dx_indicaciones','dx_control'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    // Pre-fill motivo from appointment
-    if (cita.motivo) document.getElementById('an_motivo').value = cita.motivo;
-    tipoDxActual = 'presuntivo';
-    setTipoDx('presuntivo', document.getElementById('dx_pres'));
-    renderReceta(); renderLabs(); renderRemisiones();
-    loadEspecialidadesRemision();
-    switchConsultaTab('sv');
-    document.getElementById('consultaError').classList.add('hidden');
-    document.getElementById('consultaDrawer').classList.remove('translate-x-full');
-    document.getElementById('consultaOverlay').classList.remove('hidden');
+  window.cerrarAtender = () => {
+    document.getElementById('atenderModal').classList.add('hidden');
+    document.getElementById('atenderModal').classList.remove('flex');
   };
 
-  window.cerrarConsulta = () => {
-    document.getElementById('consultaDrawer').classList.add('translate-x-full');
-    document.getElementById('consultaOverlay').classList.add('hidden');
+  window.abrirRemisionDesdeAtender = () => {
+    const citaId = document.getElementById('atenderCitaId').value;
+    const pacienteId = document.getElementById('atenderPacienteId').value;
+    const notas = document.getElementById('atenderNotas').value;
+    cerrarAtender();
+    emitirOrden(Number(citaId), Number(pacienteId));
+    if (notas) document.getElementById('ordenObservaciones').value = notas;
   };
 
-  window.setTipoDx = (tipo, btn) => {
-    tipoDxActual = tipo;
-    const colors = { presuntivo: 'border-slate-900 bg-slate-900 text-white', confirmado: 'border-emerald-600 bg-emerald-600 text-white', descartado: 'border-red-500 bg-red-500 text-white' };
-    ['dx_pres','dx_conf','dx_desc'].forEach(id => {
-      document.getElementById(id).className = 'tipodx-btn flex-1 py-2 text-xs font-semibold border-2 border-gray-200 text-gray-600 rounded-xl transition-all hover:border-gray-300';
-    });
-    btn.className = `tipodx-btn flex-1 py-2 text-xs font-semibold border-2 rounded-xl transition-all ${colors[tipo]}`;
-  };
-
-  // ── Receta ────────────────────────────────────────────
-  const FORMAS = ['tableta','cápsula','jarabe','ampolla','crema','gotas','inhalador','supositorio','otro'];
-
-  window.addMedicamento = () => {
-    medicamentos.push({ medicamento:'', concentracion:'', forma_farmaceutica:'tableta', dosis:'', frecuencia:'', duracion:'', cantidad:'', indicaciones:'' });
-    renderReceta();
-  };
-  window.removeMed = (i) => { medicamentos.splice(i,1); renderReceta(); };
-
-  function renderReceta() {
-    const c = document.getElementById('recetaList');
-    if (!medicamentos.length) {
-      c.innerHTML = `<div class="text-center py-8 text-gray-300 border-2 border-dashed border-gray-200 rounded-2xl text-xs">Sin medicamentos. Presione "Agregar medicamento".</div>`;
-      return;
-    }
-    c.innerHTML = medicamentos.map((m,i) => `
-      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Medicamento ${i+1}</span>
-          <button onclick="removeMed(${i})" class="text-red-400 hover:text-red-600 text-xs font-medium">✕ Quitar</button>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="col-span-2">
-            <input value="${m.medicamento}" oninput="medicamentos[${i}].medicamento=this.value" type="text" placeholder="Nombre del medicamento *"
-              class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none font-semibold"/>
-          </div>
-          <input value="${m.concentracion}" oninput="medicamentos[${i}].concentracion=this.value" type="text" placeholder="Concentración (ej: 500mg)"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-          <select onchange="medicamentos[${i}].forma_farmaceutica=this.value"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none">
-            ${FORMAS.map(f=>`<option value="${f}" ${m.forma_farmaceutica===f?'selected':''}>${f.charAt(0).toUpperCase()+f.slice(1)}</option>`).join('')}
-          </select>
-          <input value="${m.dosis}" oninput="medicamentos[${i}].dosis=this.value" type="text" placeholder="Dosis (ej: 1 tableta) *"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-          <input value="${m.frecuencia}" oninput="medicamentos[${i}].frecuencia=this.value" type="text" placeholder="Frecuencia (ej: cada 8h) *"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-          <input value="${m.duracion}" oninput="medicamentos[${i}].duracion=this.value" type="text" placeholder="Duración (ej: 5 días) *"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-          <input value="${m.cantidad}" oninput="medicamentos[${i}].cantidad=this.value" type="text" placeholder="Cantidad (ej: 15 tabletas)"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-          <input value="${m.indicaciones}" oninput="medicamentos[${i}].indicaciones=this.value" type="text" placeholder="Indicaciones especiales"
-            class="col-span-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-        </div>
-      </div>`).join('');
-  }
-
-  // ── Laboratorio ───────────────────────────────────────
-  window.addLab = () => { laboratorios.push({ examen:'', indicacion:'', urgente: false }); renderLabs(); };
-  window.removeLab = (i) => { laboratorios.splice(i,1); renderLabs(); };
-
-  function renderLabs() {
-    const c = document.getElementById('labList');
-    if (!laboratorios.length) {
-      c.innerHTML = `<div class="text-center py-8 text-gray-300 border-2 border-dashed border-gray-200 rounded-2xl text-xs">Sin exámenes. Presione "Agregar examen".</div>`;
-      return;
-    }
-    c.innerHTML = laboratorios.map((l,i) => `
-      <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
-        <div class="flex-1 grid grid-cols-2 gap-2">
-          <input value="${l.examen}" oninput="laboratorios[${i}].examen=this.value" type="text" placeholder="Nombre del examen *"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none font-semibold"/>
-          <input value="${l.indicacion}" oninput="laboratorios[${i}].indicacion=this.value" type="text" placeholder="Indicación clínica"
-            class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 outline-none"/>
-        </div>
-        <label class="flex items-center gap-1.5 text-xs font-semibold text-red-600 shrink-0 cursor-pointer">
-          <input type="checkbox" ${l.urgente?'checked':''} onchange="laboratorios[${i}].urgente=this.checked" class="rounded"/> Urgente
-        </label>
-        <button onclick="removeLab(${i})" class="text-red-400 hover:text-red-600 text-xs font-medium shrink-0">✕</button>
-      </div>`).join('');
-  }
-
-  // ── Remisión ──────────────────────────────────────────
-  async function loadEspecialidadesRemision() {
-    const res = await fetch(`${API}/especialidades/`);
-    const lista = await res.json();
-    const sel = document.getElementById('rem_esp');
-    sel.innerHTML = '<option value="">Seleccionar especialidad...</option>';
-    lista.forEach(e => {
-      const o = document.createElement('option');
-      o.value = e.id; o.textContent = e.nombre;
-      sel.appendChild(o);
-    });
-  }
-
-  window.agregarRemision = () => {
-    const espId = document.getElementById('rem_esp').value;
-    const espNombre = document.getElementById('rem_esp').selectedOptions[0]?.text || '';
-    const vigencia = document.getElementById('rem_vigencia').value;
-    const obs = document.getElementById('rem_obs').value;
-    if (!espId) { alert('Seleccione una especialidad'); return; }
-    remisiones.push({ especialidad_id: espId, especialidad_nombre: espNombre, vigencia_dias: vigencia, observaciones: obs });
-    document.getElementById('rem_esp').value = '';
-    document.getElementById('rem_obs').value = '';
-    renderRemisiones();
-  };
-  window.removeRemision = (i) => { remisiones.splice(i,1); renderRemisiones(); };
-
-  function renderRemisiones() {
-    const c = document.getElementById('remisionesActuales');
-    if (!remisiones.length) { c.innerHTML = ''; return; }
-    c.innerHTML = remisiones.map((r,i) => `
-      <div class="flex items-center justify-between p-3 bg-teal-50 border border-teal-100 rounded-xl">
-        <div>
-          <p class="text-sm font-semibold text-teal-800">${r.especialidad_nombre}</p>
-          <p class="text-xs text-teal-600">Vigencia: ${r.vigencia_dias} días ${r.observaciones ? '· '+r.observaciones.substring(0,50) : ''}</p>
-        </div>
-        <button onclick="removeRemision(${i})" class="text-red-400 hover:text-red-600 text-xs ml-2 font-medium">✕</button>
-      </div>`).join('');
-  }
-
-  // ── Guardar consulta ──────────────────────────────────
-  window.guardarConsulta = async () => {
-    const btn = document.getElementById('btnGuardarConsulta');
-    const errDiv = document.getElementById('consultaError');
-    const motivo = document.getElementById('an_motivo').value.trim();
-    const diag = document.getElementById('dx_diag').value.trim();
-    if (!motivo) { errDiv.textContent = 'El motivo de consulta es obligatorio (pestaña Anamnesis).'; errDiv.classList.remove('hidden'); switchConsultaTab('an'); return; }
-    if (!diag) { errDiv.textContent = 'El diagnóstico principal es obligatorio (pestaña Diagnóstico).'; errDiv.classList.remove('hidden'); switchConsultaTab('dx'); return; }
-
-    // Validate receta
-    for (const m of medicamentos) {
-      if (!m.medicamento || !m.dosis || !m.frecuencia || !m.duracion) {
-        errDiv.textContent = 'Complete todos los campos obligatorios de la receta (medicamento, dosis, frecuencia, duración).';
-        errDiv.classList.remove('hidden'); switchConsultaTab('rx'); return;
-      }
-    }
-    for (const l of laboratorios) {
-      if (!l.examen) { errDiv.textContent = 'Complete el nombre del examen de laboratorio.'; errDiv.classList.remove('hidden'); switchConsultaTab('lab'); return; }
-    }
-
-    btn.textContent = 'Guardando...'; btn.disabled = true;
-    errDiv.classList.add('hidden');
-
-    const payload = {
-      cita_id: citaActual.id,
-      motivo_consulta: motivo,
-      enfermedad_actual: document.getElementById('an_hea').value,
-      antecedentes_personales: document.getElementById('an_antecedentes').value,
-      revision_sistemas: document.getElementById('an_revision').value,
-      tension_arterial: document.getElementById('sv_ta').value,
-      frecuencia_cardiaca: parseInt(document.getElementById('sv_fc').value) || null,
-      frecuencia_respiratoria: parseInt(document.getElementById('sv_fr').value) || null,
-      temperatura: parseFloat(document.getElementById('sv_temp').value) || null,
-      saturacion_o2: parseInt(document.getElementById('sv_spo2').value) || null,
-      peso_kg: parseFloat(document.getElementById('sv_peso').value) || null,
-      talla_cm: parseFloat(document.getElementById('sv_talla').value) || null,
-      examen_fisico: document.getElementById('sv_exfisico').value,
-      diagnostico_principal: diag,
-      codigo_cie10: document.getElementById('dx_cie10').value.toUpperCase(),
-      tipo_diagnostico: tipoDxActual,
-      conducta: document.getElementById('dx_conducta').value,
-      indicaciones: document.getElementById('dx_indicaciones').value,
-      proximo_control: document.getElementById('dx_control').value || null,
-      receta: medicamentos,
-      laboratorios: laboratorios,
-    };
-
-    const res = await fetch(`${API}/historias/`, {
-      method: 'POST',
+  window.completarAtencion = async () => {
+    const id = document.getElementById('atenderCitaId').value;
+    const notas = document.getElementById('atenderNotas').value;
+    const errDiv = document.getElementById('atenderError');
+    const res = await fetch(`${API}/citas/${id}/`, {
+      method: 'PUT',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ estado: 'completada', observaciones: notas }),
     });
-
-    if (!res.ok) {
-      const d = await res.json();
-      errDiv.textContent = d.error || JSON.stringify(d);
-      errDiv.classList.remove('hidden');
-      btn.textContent = 'Guardar Consulta y Completar'; btn.disabled = false;
-      return;
-    }
-
-    // Crear remisiones (órdenes médicas) en paralelo
-    for (const r of remisiones) {
-      await fetch(`${API}/ordenes-medicas/`, {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paciente_id: citaActual.paciente?.id,
-          especialidad_solicitada_id: Number(r.especialidad_id),
-          cita_origen_id: citaActual.id,
-          vigencia_dias: Number(r.vigencia_dias) || 30,
-          observaciones: r.observaciones,
-        }),
-      });
-    }
-
-    cerrarConsulta();
-    await loadResumenCitas();
-    btn.textContent = 'Guardar Consulta y Completar'; btn.disabled = false;
+    if (res.ok) { cerrarAtender(); await loadResumenCitas(); }
+    else { errDiv.textContent = 'No se pudo completar la cita.'; errDiv.classList.remove('hidden'); }
   };
 
   window.guardarOrden = async () => {
@@ -1077,6 +698,8 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
 
     if (res.ok) {
       document.getElementById('ordenModal').classList.add('hidden');
+      const citaId = document.getElementById('ordenCitaId').value;
+      await fetch(`${API}/citas/${citaId}/`, { method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: 'completada' }) });
       await loadResumenCitas();
     } else {
       const data = await res.json();

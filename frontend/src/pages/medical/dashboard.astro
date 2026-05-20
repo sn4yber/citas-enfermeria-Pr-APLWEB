@@ -64,7 +64,7 @@ import MedicalLayout from '../../layouts/MedicalLayout.astro';
     throw new Error('No autorizado');
   }
 
-  const API = 'http://localhost:8000/api';
+  const API = window.__API__;
   const headers = { 'Authorization': `Bearer ${token}` };
   const today = new Date().toISOString().split('T')[0];
   

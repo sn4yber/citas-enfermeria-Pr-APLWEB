@@ -189,7 +189,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
 <script>
 // @ts-nocheck
-const API = 'http://localhost:8000/api';
+const API = window.__API__;
 const token = localStorage.getItem('token');
 if (!token || localStorage.getItem('rol') !== 'paciente') {
   window.location.replace('/auth/login');

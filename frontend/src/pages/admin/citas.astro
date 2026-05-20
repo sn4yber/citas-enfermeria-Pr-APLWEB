@@ -310,7 +310,7 @@ if (!token || localStorage.getItem('rol') !== 'admin') {
   throw new Error();
 }
 
-const API = 'http://localhost:8000/api';
+const API = window.__API__;
 const H = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 let todasCitas = [];
 let todasOrdenes = [];

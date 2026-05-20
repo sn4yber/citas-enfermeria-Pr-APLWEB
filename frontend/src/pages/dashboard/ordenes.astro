@@ -7,7 +7,11 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
     <div>
       <h1 class="text-2xl font-bold tracking-tight text-gray-900">Mis Órdenes Médicas</h1>
-      <p class="text-gray-500 mt-1">Órdenes emitidas por su médico y autorizaciones de su EPS</p>
+      <p class="text-gray-500 mt-1">Cuando su médico le remite, aquí verá el estado y podrá agendar el especialista</p>
+    </div>
+
+    <div class="bg-teal-50 border border-teal-100 rounded-2xl p-4 text-sm text-teal-800">
+      <strong>¿Cómo funciona?</strong> Tras su cita de medicina general, si el médico emite una remisión, la EPS la autoriza y entonces aparecerá el botón <strong>Agendar Especialista</strong> en la orden correspondiente.
     </div>
 
     <!-- Estado legend -->
@@ -92,7 +96,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
 <script>
 // @ts-nocheck
-const API = 'http://localhost:8000/api';
+const API = window.__API__;
 const token = localStorage.getItem('token');
 if (!token || localStorage.getItem('rol') !== 'paciente') {
   window.location.replace('/auth/login');

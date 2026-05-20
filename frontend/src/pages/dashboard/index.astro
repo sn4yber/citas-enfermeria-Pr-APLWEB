@@ -17,6 +17,33 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       </div>
     </div>
 
+    <!-- Tu camino en el SGSSS -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Su camino de atención</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+        <div class="p-3 rounded-xl bg-teal-50 border border-teal-100">
+          <p class="text-lg font-bold text-teal-700">1</p>
+          <p class="text-xs font-semibold text-teal-800 mt-1">Medicina General</p>
+          <a href="/dashboard/agendar" class="text-[10px] text-teal-600 underline mt-1 inline-block">Agendar →</a>
+        </div>
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-100">
+          <p class="text-lg font-bold text-amber-600">2</p>
+          <p class="text-xs font-semibold text-amber-800 mt-1">Orden del médico</p>
+          <p class="text-[10px] text-amber-600 mt-1">Si requiere especialista</p>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <p class="text-lg font-bold text-slate-600">3</p>
+          <p class="text-xs font-semibold text-slate-800 mt-1">Autorización EPS</p>
+          <p class="text-[10px] text-slate-500 mt-1">La tramita la IPS</p>
+        </div>
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+          <p class="text-lg font-bold text-emerald-600">4</p>
+          <p class="text-xs font-semibold text-emerald-800 mt-1">Cita especialista</p>
+          <a href="/dashboard/ordenes" class="text-[10px] text-emerald-600 underline mt-1 inline-block">Mis órdenes →</a>
+        </div>
+      </div>
+    </div>
+
     <div class="grid md:grid-cols-3 gap-6">
       <!-- Acciones principales -->
       <div class="md:col-span-1 flex flex-col gap-4">
@@ -75,7 +102,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
   async function loadCitas() {
     try {
-      const res = await fetch('http://localhost:8000/api/citas/', {
+      const res = await fetch(`${window.__API__}/citas/`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -136,7 +163,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   loadCitas();
 
   // Show ordenes card if there are authorized orders
-  fetch('http://localhost:8000/api/ordenes-medicas/', { headers: { Authorization: `Bearer ${token}` } })
+  fetch(`${window.__API__}/ordenes-medicas/`, { headers: { Authorization: `Bearer ${token}` } })
     .then(r => r.json())
     .then(ordenes => {
       const autorizadas = ordenes.filter(o => o.estado === 'autorizada' && o.autorizacion?.estado === 'aprobada');
